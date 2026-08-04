@@ -1,106 +1,59 @@
 <!DOCTYPE html>
+
 <html lang="ko">
 <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>세계지도 배경</title>
 
-<meta charset="UTF-8">
-<title>지진 모델링</title>
+  <style>
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #d9d9d9;
+    }
 
+    /* 전체 화면 배경 */
+    body {
+      background-image: url('world-map.png');
+      background-size: cover;
+      background-position: center center;
+      background-repeat: no-repeat;
+      font-family: Arial, sans-serif;
+    }
 
-<style>
+    /* 위에 내용을 올리고 싶을 때 */
+    .overlay {
+      position: absolute;
+      top: 30px;
+      left: 30px;
+      color: white;
+      background: rgba(0,0,0,0.35);
+      padding: 16px 20px;
+      border-radius: 12px;
+      backdrop-filter: blur(4px);
+    }
 
-body{
-background:#111;
-color:white;
-text-align:center;
-font-family:Arial;
-}
+    h1 {
+      margin: 0 0 8px;
+      font-size: 32px;
+    }
 
-
-#city{
-
-width:500px;
-height:300px;
-margin:50px auto;
-background:#555;
-font-size:80px;
-padding-top:50px;
-
-}
-
-
-.shake{
-
-animation:shake 0.2s infinite;
-
-}
-
-
-@keyframes shake{
-
-0%{
-transform:translate(5px,5px);
-}
-
-50%{
-transform:translate(-5px,-5px);
-}
-
-100%{
-transform:translate(5px,-5px);
-}
-
-}
-
-
-button{
-
-padding:15px;
-font-size:20px;
-
-}
-
-</style>
-
+    p {
+      margin: 0;
+      font-size: 16px;
+    }
+  </style>
 
 </head>
-
-
 <body>
 
-
-<h1>🌋 지진 모델링</h1>
-
-
-<div id="city">
-🏢🏢🏢
-</div>
-
-
-<button onclick="earthquake()">
-지진 발생
-</button>
-
-
-<script>
-
-function earthquake(){
-
-let city=document.getElementById("city");
-
-city.classList.add("shake");
-
-
-setTimeout(function(){
-
-city.classList.remove("shake");
-
-},3000);
-
-
-}
-
-</script>
-
+  <div class="overlay">
+    <h1>세계지도</h1>
+    <p>배경으로 사용할 수 있는 전체 화면 지도</p>
+  </div>
 
 </body>
 </html>
