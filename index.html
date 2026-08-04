@@ -2,79 +2,73 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>FPS 게임 시작</title>
+<title>FPS 게임</title>
 
 <style>
 body{
-    margin:0;
-    height:100vh;
-    background:linear-gradient(#000,#444);
+    background:#111;
     color:white;
+    text-align:center;
     font-family:Arial;
+    height:100vh;
     display:flex;
     justify-content:center;
     align-items:center;
-    text-align:center;
 }
 
 .box{
     background:#222;
     padding:50px;
     border-radius:20px;
-    box-shadow:0 0 30px black;
 }
 
 h1{
-    font-size:50px;
     color:#ff3300;
-}
-
-p{
-    font-size:20px;
+    font-size:50px;
 }
 
 button{
-    padding:15px 40px;
+    padding:15px 35px;
     margin:15px;
+    font-size:20px;
     border:none;
     border-radius:30px;
-    font-size:20px;
-    font-weight:bold;
-    cursor:pointer;
     background:#ff3300;
     color:white;
+    cursor:pointer;
 }
 
 button:hover{
     background:#ff9900;
-    transform:scale(1.1);
 }
-
 </style>
 
 </head>
 
 <body>
 
-
 <div class="box">
 
 <h1>🎮 지진 FPS</h1>
 
-<p>
-생존을 위한 전투가 시작된다!
-</p>
+<p>생존을 위한 FPS 전투</p>
 
 
-<a href="main.html">
+<a href="play.html">
 <button>
-게임 시작하기
+🎮 게임 시작하기
+</button>
+</a>
+
+
+<a href="earthquake.html">
+<button>
+🌋 지진 모델링
 </button>
 </a>
 
 
 </div>
-
 
 </body>
 </html>
