@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>FPS 플레이</title>
+
+<style>
+body{
+    margin:0;
+    background:#222;
+    color:white;
+    text-align:center;
+    font-family:Arial;
+}
+
+#game{
+    width:800px;
+    height:500px;
+    margin:auto;
+    background:#555;
+    position:relative;
+    overflow:hidden;
+}
+
+
+.player{
+    width:50px;
+    height:50px;
+    background:blue;
+    position:absolute;
+    bottom:20px;
+    left:375px;
+}
+
+
+.enemy{
+    width:50px;
+    height:50px;
+    background:red;
+    position:absolute;
+    top:50px;
+}
+
+
+button{
+    padding:15px;
+    margin:10px;
+}
+</style>
+
+</head>
+
+
+<body>
+
+
+<h1>🔫 지진 FPS</h1>
+
+<p>
+이동: ← → 키 / 공격: 클릭
+</p>
+
+
+<div id="game">
+
+<div class="player" id="player"></div>
+
+<div class="enemy" id="enemy" style="left:200px;">
+🏹
+</div>
+
+<div class="enemy" style="left:600px;">
+⚔
+</div>
+
+
+</div>
+
+
+<button onclick="attack()">
+🔫 총쏘기
+</button>
+
+
+<button onclick="dash()">
+💨 돌진
+</button>
+
+
+<h2 id="score">
+처치 수: 0
+</h2>
+
+
+<script>
+
+let player=document.getElementById("player");
+
+let score=0;
+
+
+document.addEventListener("keydown",function(e){
+
+let x=player.offsetLeft;
+
+
+if(e.key=="ArrowLeft"){
+player.style.left=x-20+"px";
+}
+
+
+if(e.key=="ArrowRight"){
+player.style.left=x+20+"px";
+}
+
+});
+
+
+
+function attack(){
+
+score++;
+
+document.getElementById("score").innerHTML=
+"처치 수: "+score;
+
+alert("🔫 적을 공격했습니다!");
+
+}
+
+
+
+function dash(){
+
+let x=player.offsetLeft;
+
+player.style.left=x+100+"px";
+
+alert("💨 돌진!");
+
+}
+
+
+</script>
+
+
+</body>
+</html>
