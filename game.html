@@ -3,7 +3,7 @@
 <head>
 
 <meta charset="UTF-8">
-<title>3D 전투기 게임</title>
+<title>3D 전투기 슈팅</title>
 
 <style>
 
@@ -26,15 +26,22 @@ body{
 
 </head>
 
+
 <body>
 
 
 <div id="ui">
+
 ❤️ HP : <span id="hp">100</span>
+
 <br>
+
 🏆 점수 : <span id="score">0</span>
+
 <br>
-🔫 마우스 누르기 : 연사
+
+🔫 마우스 : 연사
+
 </div>
 
 
@@ -79,6 +86,17 @@ innerHeight
 document.body.appendChild(
 renderer.domElement
 );
+
+
+
+
+// 총소리
+
+const shootSound =
+new Audio("sounds/shoot.mp3");
+
+
+shootSound.volume=0.4;
 
 
 
@@ -130,8 +148,9 @@ scene.add(ground);
 
 
 // =====================
-// 비행기 만들기
+// 비행기 생성
 // =====================
+
 
 function makePlane(color){
 
@@ -155,7 +174,6 @@ color:color
 })
 
 );
-
 
 
 body.rotation.x=Math.PI/2;
@@ -193,9 +211,9 @@ return plane;
 
 
 
-// =====================
+
+
 // 플레이어
-// =====================
 
 
 let player =
@@ -215,13 +233,12 @@ player.position.set(
 
 
 
+
 camera.position.set(
 0,
 8,
 20
 );
-
-
 
 
 
@@ -235,6 +252,9 @@ camera.position.set(
 
 
 let enemies=[];
+
+
+let explosions=[];
 
 
 
@@ -289,8 +309,77 @@ spawnEnemy();
 
 
 
+
 // =====================
-// 총알
+// 폭발 효과
+// =====================
+
+
+function explode(position){
+
+
+let particles=[];
+
+
+
+for(let i=0;i<15;i++){
+
+
+let p =
+new THREE.Mesh(
+
+new THREE.SphereGeometry(
+0.1
+),
+
+new THREE.MeshBasicMaterial({
+color:0xffaa00
+})
+
+);
+
+
+
+p.position.copy(position);
+
+
+
+p.velocity =
+new THREE.Vector3(
+
+(Math.random()-0.5)*0.3,
+
+(Math.random()-0.5)*0.3,
+
+(Math.random()-0.5)*0.3
+
+);
+
+
+
+scene.add(p);
+
+
+particles.push(p);
+
+
+}
+
+
+
+explosions.push(particles);
+
+
+}
+
+
+
+
+
+
+
+// =====================
+// 총
 // =====================
 
 
@@ -310,6 +399,7 @@ shooting=true;
 });
 
 
+
 document.addEventListener(
 "mouseup",
 ()=>{
@@ -323,6 +413,12 @@ shooting=false;
 
 
 function shoot(){
+
+
+shootSound.currentTime=0;
+
+shootSound.play();
+
 
 
 let bullet =
@@ -340,9 +436,7 @@ color:0xffff00
 
 
 
-bullet.position.copy(
-player.position
-);
+bullet.position.copy(player.position);
 
 
 bullet.position.z-=2;
@@ -359,6 +453,7 @@ bullets.push(bullet);
 
 
 
+
 // 연사
 
 setInterval(()=>{
@@ -372,7 +467,6 @@ shoot();
 
 
 },100);
-
 
 
 
@@ -410,6 +504,8 @@ keys[e.key]=false;
 
 
 
+
+
 let hp=100;
 
 let score=0;
@@ -421,7 +517,7 @@ let score=0;
 
 
 // =====================
-// 업데이트
+// 게임 업데이트
 // =====================
 
 
@@ -429,22 +525,27 @@ function update(){
 
 
 
-// 이동
-
 if(keys.ArrowLeft)
+
 player.position.x-=0.3;
 
 
 if(keys.ArrowRight)
+
 player.position.x+=0.3;
 
 
+
 if(keys.ArrowUp)
+
 player.position.y+=0.3;
 
 
 if(keys.ArrowDown)
+
 player.position.y-=0.3;
+
+
 
 
 
@@ -460,18 +561,6 @@ b.position.z-=1;
 
 
 
-if(b.position.z<-120){
-
-scene.remove(b);
-
-bullets.splice(i,1);
-
-}
-
-
-
-
-
 enemies.forEach((e,j)=>{
 
 
@@ -480,17 +569,17 @@ b.position.distanceTo(e.position)<1.5
 ){
 
 
+explode(e.position);
+
 
 scene.remove(e);
 
 scene.remove(b);
 
 
-
 enemies.splice(j,1);
 
 bullets.splice(i,1);
-
 
 
 score++;
@@ -502,6 +591,36 @@ document.getElementById("score")
 
 }
 
+
+
+});
+
+
+});
+
+
+
+
+
+
+
+// 폭발 움직임
+
+
+explosions.forEach((group,index)=>{
+
+
+group.forEach(p=>{
+
+
+p.position.add(
+p.velocity
+);
+
+
+p.scale.multiplyScalar(
+0.95
+);
 
 
 });
@@ -547,12 +666,12 @@ document.getElementById("hp")
 
 
 
-// =====================
-// 카메라 추적
-// =====================
 
 
-let targetCamera =
+// 카메라 따라가기
+
+
+let target =
 new THREE.Vector3(
 
 player.position.x,
@@ -566,7 +685,7 @@ player.position.z+18
 
 
 camera.position.lerp(
-targetCamera,
+target,
 0.08
 );
 
@@ -586,7 +705,6 @@ player.position.z-10
 
 
 
-
 if(hp<=0){
 
 alert(
@@ -600,6 +718,7 @@ location.reload();
 
 
 }
+
 
 
 
@@ -636,6 +755,7 @@ animate();
 
 
 </script>
+
 
 </body>
 </html>
