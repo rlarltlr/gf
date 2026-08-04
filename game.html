@@ -2,22 +2,19 @@
 
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>전투기 슈팅 게임</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>3D 전투기 슈팅 게임</title>
 
 <style>
 body{
     margin:0;
     overflow:hidden;
-    background:#87ceeb;
+    background:#0b1d3a;
 }
-
 canvas{
     display:block;
-    background:linear-gradient(#6ec6ff,#b3ecff);
 }
-
 #hud{
     position:absolute;
     top:10px;
@@ -25,7 +22,7 @@ canvas{
     color:white;
     font-size:24px;
     font-family:Arial,sans-serif;
-    text-shadow:2px 2px 4px rgba(0,0,0,0.5);
+    text-shadow:2px 2px 6px rgba(0,0,0,0.6);
 }
 </style>
 
@@ -37,156 +34,226 @@ canvas{
 <canvas id="game"></canvas>
 
 <script>
-const canvas = document.getElementById("game");
-const ctx = canvas.getContext("2d");
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
 
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+function resize(){
+    canvas.width = innerWidth;
+    canvas.height = innerHeight;
+}
+window.addEventListener('resize', resize);
+resize();
 
 let score = 0;
 let hp = 5;
 
 const player = {
-    x: canvas.width/2,
-    y: canvas.height-80,
-    w: 40,
-    h: 60,
-    speed: 6
+    x: canvas.width / 2,
+    y: canvas.height - 90,
+    w: 50,
+    h: 70,
+    speed: 7
 };
 
-let bullets = [];
-let enemies = [];
-let keys = {};
+const bullets = [];
+const enemies = [];
+const keys = {};
 let shooting = false;
 
-window.addEventListener("keydown",e=>keys[e.key]=true);
-window.addEventListener("keyup",e=>keys[e.key]=false);
+window.addEventListener('keydown', e => keys[e.key] = true);
+window.addEventListener('keyup', e => keys[e.key] = false);
 
-window.addEventListener("mousedown",()=>shooting=true);
-window.addEventListener("mouseup",()=>shooting=false);
+window.addEventListener('mousedown', () => shooting = true);
+window.addEventListener('mouseup', () => shooting = false);
 
 function shoot(){
     bullets.push({
         x: player.x,
-        y: player.y-20,
-        r:4
+        y: player.y - 35,
+        r: 4
     });
 }
 
-setInterval(()=>{
+setInterval(() => {
     if(shooting) shoot();
-},100);
+}, 120);
 
+// 적 생성 (수를 줄임)
 function spawnEnemy(){
     enemies.push({
-        x:Math.random()*(canvas.width-40)+20,
-        y:-20,
-        w:35,
-        h:45,
-        speed:2+Math.random()*3
+        x: Math.random() * (canvas.width - 120) + 60,
+        y: -40,
+        z: 0.2,
+        speed: 0.004 + Math.random() * 0.003
     });
 }
 
-setInterval(()=>{
-    const count = Math.floor(Math.random()*3)+2;
-    for(let i=0;i<count;i++) spawnEnemy();
-},250);
+setInterval(spawnEnemy, 800);
+
+// 배경 별
+const stars = Array.from({length:120}, () => ({
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height,
+    s: Math.random() * 2 + 1
+}));
 
 function update(){
 
-    if(keys["ArrowLeft"]) player.x-=player.speed;
-    if(keys["ArrowRight"]) player.x+=player.speed;
-    if(keys["ArrowUp"]) player.y-=player.speed;
-    if(keys["ArrowDown"]) player.y+=player.speed;
+    if(keys['ArrowLeft']) player.x -= player.speed;
+    if(keys['ArrowRight']) player.x += player.speed;
+    if(keys['ArrowUp']) player.y -= player.speed;
+    if(keys['ArrowDown']) player.y += player.speed;
 
-    player.x=Math.max(20,Math.min(canvas.width-20,player.x));
-    player.y=Math.max(30,Math.min(canvas.height-30,player.y));
+    player.x = Math.max(30, Math.min(canvas.width - 30, player.x));
+    player.y = Math.max(40, Math.min(canvas.height - 40, player.y));
 
-    for(let i=bullets.length-1;i>=0;i--){
-        bullets[i].y-=10;
-        if(bullets[i].y<0) bullets.splice(i,1);
+    for(let i = bullets.length - 1; i >= 0; i--){
+        bullets[i].y -= 12;
+        if(bullets[i].y < -20) bullets.splice(i,1);
     }
 
-    for(let i=enemies.length-1;i>=0;i--){
-        enemies[i].y+=enemies[i].speed;
+    for(let i = enemies.length - 1; i >= 0; i--){
+        const e = enemies[i];
 
-        if(enemies[i].y>canvas.height+50){
+        e.z += e.speed;
+
+        const ex = e.x;
+        const ey = e.y + e.z * canvas.height;
+        const size = 18 + e.z * 70;
+
+        if(ey > canvas.height + 60){
             enemies.splice(i,1);
             hp--;
             continue;
         }
 
         if(
-            Math.abs(enemies[i].x-player.x)<30 &&
-            Math.abs(enemies[i].y-player.y)<40
+            Math.abs(ex - player.x) < size/2 + 20 &&
+            Math.abs(ey - player.y) < size/2 + 25
         ){
             enemies.splice(i,1);
             hp--;
             continue;
         }
 
-        for(let j=bullets.length-1;j>=0;j--){
+        for(let j = bullets.length - 1; j >= 0; j--){
             if(
-                Math.abs(bullets[j].x-enemies[i].x)<20 &&
-                Math.abs(bullets[j].y-enemies[i].y)<25
+                Math.abs(bullets[j].x - ex) < size/2 &&
+                Math.abs(bullets[j].y - ey) < size/2
             ){
                 bullets.splice(j,1);
                 enemies.splice(i,1);
-                score+=10;
+                score += 10;
                 break;
             }
         }
     }
 
-    document.getElementById("hud").innerText =
+    document.getElementById('hud').textContent =
         `점수: ${score} | HP: ${hp}`;
 
-    if(hp<=0){
+    if(hp <= 0){
         alert(`게임 오버!\\n최종 점수: ${score}`);
         location.reload();
     }
 }
 
-function draw(){
+function drawBackground(){
+    const g = ctx.createLinearGradient(0,0,0,canvas.height);
+    g.addColorStop(0,'#07101f');
+    g.addColorStop(1,'#163a70');
+    ctx.fillStyle = g;
+    ctx.fillRect(0,0,canvas.width,canvas.height);
 
-    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle = 'white';
+    for(const s of stars){
+        ctx.globalAlpha = 0.8;
+        ctx.beginPath();
+        ctx.arc(s.x,s.y,s.s,0,Math.PI*2);
+        ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+}
 
-    ctx.fillStyle="blue";
+function drawPlayer(){
+
+    ctx.save();
+    ctx.translate(player.x, player.y);
+
+    ctx.shadowColor = '#00bfff';
+    ctx.shadowBlur = 20;
+
+    const grad = ctx.createLinearGradient(0,-35,0,35);
+    grad.addColorStop(0,'#d0ecff');
+    grad.addColorStop(1,'#1976d2');
+    ctx.fillStyle = grad;
+
     ctx.beginPath();
-    ctx.moveTo(player.x,player.y-30);
-    ctx.lineTo(player.x-20,player.y+20);
-    ctx.lineTo(player.x,player.y+10);
-    ctx.lineTo(player.x+20,player.y+20);
+    ctx.moveTo(0,-35);
+    ctx.lineTo(-22,28);
+    ctx.lineTo(0,12);
+    ctx.lineTo(22,28);
     ctx.closePath();
     ctx.fill();
 
-    ctx.fillStyle="yellow";
-    bullets.forEach(b=>{
+    ctx.fillStyle = '#90caf9';
+    ctx.fillRect(-6,-10,12,26);
+
+    ctx.restore();
+}
+
+function drawBullets(){
+
+    ctx.fillStyle = '#ffe066';
+
+    for(const b of bullets){
         ctx.beginPath();
         ctx.arc(b.x,b.y,b.r,0,Math.PI*2);
         ctx.fill();
-    });
+    }
+}
 
-    ctx.fillStyle="red";
-    enemies.forEach(e=>{
+function drawEnemies(){
+
+    for(const e of enemies){
+
+        const ex = e.x;
+        const ey = e.y + e.z * canvas.height;
+        const size = 18 + e.z * 70;
+
+        ctx.save();
+        ctx.translate(ex, ey);
+
+        ctx.shadowColor = '#ff5252';
+        ctx.shadowBlur = 18;
+
+        const grad = ctx.createLinearGradient(0,-size/2,0,size/2);
+        grad.addColorStop(0,'#ffcdd2');
+        grad.addColorStop(1,'#c62828');
+        ctx.fillStyle = grad;
+
         ctx.beginPath();
-        ctx.moveTo(e.x,e.y+20);
-        ctx.lineTo(e.x-18,e.y-20);
-        ctx.lineTo(e.x,e.y-10);
-        ctx.lineTo(e.x+18,e.y-20);
+        ctx.moveTo(0,size/2);
+        ctx.lineTo(-size/2,-size/2);
+        ctx.lineTo(0,-size/4);
+        ctx.lineTo(size/2,-size/2);
         ctx.closePath();
         ctx.fill();
-    });
 
+        ctx.restore();
+    }
 }
 
-function gameLoop(){
+function loop(){
     update();
-    draw();
-    requestAnimationFrame(gameLoop);
+    drawBackground();
+    drawPlayer();
+    drawBullets();
+    drawEnemies();
+    requestAnimationFrame(loop);
 }
 
-gameLoop();
+loop();
 </script>
 
 </body>
