@@ -82,15 +82,13 @@ wing.castShadow = true;
 
 player.add(body);
 player.add(wing);
-
 player.position.set(0,0,6);
 scene.add(player);
 
-// 총알
+// 총알 / 적 / 폭발
 const bullets = [];
-
-// 적
 const enemies = [];
+const explosions = [];
 
 let score = 0;
 let hp = 5;
@@ -102,31 +100,27 @@ const keys = {};
 window.addEventListener('keydown',e=>keys[e.key.toLowerCase()]=true);
 window.addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
 
-let shooting = false;
+let shooting=false;
 window.addEventListener('mousedown',()=>shooting=true);
 window.addEventListener('mouseup',()=>shooting=false);
 
 // 총알 생성
 function createBullet(){
-
     const b = new THREE.Mesh(
         new THREE.SphereGeometry(0.08,8,8),
         new THREE.MeshBasicMaterial({color:0xffff00})
     );
-
     b.position.copy(player.position);
     b.position.z -= 1;
-
     scene.add(b);
     bullets.push(b);
-
 }
 
 setInterval(()=>{
     if(shooting) createBullet();
 },120);
 
-// 적 생성 (정면 먼 거리)
+// 적 생성
 function createEnemy(){
 
     const e = new THREE.Group();
@@ -156,8 +150,41 @@ function createEnemy(){
 
 }
 
-// 적은 적당히 등장
 setInterval(createEnemy,1000);
+
+// 폭발 생성
+function createExplosion(position){
+
+    const particles = [];
+
+    for(let i=0;i<20;i++){
+
+        const p = new THREE.Mesh(
+            new THREE.SphereGeometry(0.06,6,6),
+            new THREE.MeshBasicMaterial({
+                color: i%2===0 ? 0xffaa00 : 0xff3300
+            })
+        );
+
+        p.position.copy(position);
+
+        p.userData = {
+            velocity: new THREE.Vector3(
+                (Math.random()-0.5)*0.6,
+                (Math.random()-0.5)*0.6,
+                (Math.random()-0.5)*0.6
+            ),
+            life:30
+        };
+
+        scene.add(p);
+        particles.push(p);
+
+    }
+
+    explosions.push(particles);
+
+}
 
 // 업데이트
 function update(){
@@ -172,8 +199,6 @@ function update(){
     if(keys['arrowright'] || keys['d']) player.position.x += speed;
 
     player.position.x = Math.max(-8, Math.min(8, player.position.x));
-
-    // 항상 같은 높이 유지
     player.position.y = 0;
 
     // 총알
@@ -191,10 +216,8 @@ function update(){
     // 적
     for(let i=enemies.length-1;i>=0;i--){
 
-        // 천천히 접근
         enemies[i].position.z += 0.10;
 
-        // 플레이어를 지나가면 HP 감소
         if(enemies[i].position.z > player.position.z + 6){
             scene.remove(enemies[i]);
             enemies.splice(i,1);
@@ -202,18 +225,19 @@ function update(){
             continue;
         }
 
-        // 플레이어 충돌
         if(enemies[i].position.distanceTo(player.position) < 1.0){
+            createExplosion(enemies[i].position);
             scene.remove(enemies[i]);
             enemies.splice(i,1);
             hp--;
             continue;
         }
 
-        // 총알 충돌
         for(let j=bullets.length-1;j>=0;j--){
 
             if(enemies[i].position.distanceTo(bullets[j].position) < 0.8){
+
+                createExplosion(enemies[i].position);
 
                 scene.remove(enemies[i]);
                 scene.remove(bullets[j]);
@@ -230,9 +254,40 @@ function update(){
 
     }
 
+    // 폭발 애니메이션
+    for(let i=explosions.length-1;i>=0;i--){
+
+        const particles = explosions[i];
+
+        for(let j=particles.length-1;j>=0;j--){
+
+            const p = particles[j];
+
+            p.position.add(p.userData.velocity);
+
+            p.userData.velocity.multiplyScalar(0.95);
+
+            p.userData.life--;
+
+            p.material.opacity = p.userData.life / 30;
+            p.material.transparent = true;
+
+            if(p.userData.life <= 0){
+                scene.remove(p);
+                particles.splice(j,1);
+            }
+
+        }
+
+        if(particles.length===0){
+            explosions.splice(i,1);
+        }
+
+    }
+
     hud.textContent = `점수: ${score} | HP: ${hp}`;
 
-    if(hp <= 0){
+    if(hp<=0){
         alert(`게임 오버! 최종 점수: ${score}`);
         location.reload();
     }
@@ -272,7 +327,6 @@ function animate(){
 
 animate();
 
-// 리사이즈
 window.addEventListener('resize',()=>{
 
     camera.aspect = window.innerWidth/window.innerHeight;
