@@ -1,208 +1,124 @@
 <!DOCTYPE html>
+
 <html lang="ko">
 <head>
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>전투기 슈팅 게임</title>
 
-
 <style>
-
 body{
-
     margin:0;
     height:100vh;
-
-    background:
-    linear-gradient(
-        180deg,
-        #4facfe,
-        #00f2fe
-    );
-
+    background: linear-gradient(180deg, #4facfe, #00f2fe);
     font-family:Arial, sans-serif;
-
     display:flex;
     justify-content:center;
     align-items:center;
-
 }
-
-
 
 .container{
-
     background:white;
-
     width:450px;
-
     padding:50px;
-
     border-radius:25px;
-
     text-align:center;
-
-    box-shadow:
-    0 0 30px rgba(0,0,0,0.3);
-
+    box-shadow:0 0 30px rgba(0,0,0,0.3);
 }
-
-
 
 h1{
-
     font-size:45px;
-
     color:#0066ff;
-
 }
-
-
 
 p{
-
     font-size:20px;
-
     color:#555;
-
 }
-
-
 
 .plane{
-
     font-size:100px;
-
     margin:20px;
-
 }
-
-
 
 button{
-
     width:250px;
-
     padding:18px;
-
     margin-top:20px;
-
     border:none;
-
     border-radius:30px;
-
     background:#0066ff;
-
     color:white;
-
     font-size:22px;
-
     cursor:pointer;
-
 }
-
-
 
 button:hover{
-
     background:#0044aa;
-
     transform:scale(1.05);
-
 }
 
+/* 지진 모델링 버튼 */
+.earthquake-btn{
+    background:#e53935;
+}
 
+.earthquake-btn:hover{
+    background:#b71c1c;
+}
 
 .info{
-
     margin-top:30px;
-
     background:#f2f2f2;
-
     padding:15px;
-
     border-radius:15px;
-
 }
-
-
-
 </style>
-
 
 </head>
 
-
-
 <body>
-
 
 <div class="container">
 
+```
+<div class="plane">✈️</div>
 
-<div class="plane">
-✈️
-</div>
-
-
-<h1>
-전투기 슈팅
-</h1>
-
+<h1>전투기 슈팅</h1>
 
 <p>
-내 전투기를 조종해서<br>
-적 비행기를 격추하세요!
+    내 전투기를 조종해서<br>
+    적 비행기를 격추하세요!
 </p>
 
-
-
+<!-- 게임 시작 버튼 -->
 <a href="game.html">
-
-<button>
-게임 시작하기
-</button>
-
+    <button>게임 시작하기</button>
 </a>
 
-
+<!-- 지진 모델링 버튼 -->
+<a href="earthquake.html">
+    <button class="earthquake-btn">지진 모델링</button>
+</a>
 
 <div class="info">
 
-🎮 조작법<br><br>
+    <h2>🎮 게임 방법</h2>
 
-⬅️➡️⬆️⬇️ 이동<br>
+    <p>✈️ 방향키 : 전투기 이동</p>
 
-스페이스바 : 총 발사
+    <p>🔫 마우스 왼쪽 버튼 : 총 발사 (연사)</p>
+
+    <p>👾 적 전투기를 격추하면 점수 증가</p>
+
+    <p>❤️ HP가 0이 되면 게임 종료</p>
 
 </div>
-
+```
 
 </div>
-
 
 </body>
+</html>
 
-</html><div class="info">
-
-<h2>🎮 게임 방법</h2>
-
-<p>
-✈️ 방향키 : 전투기 이동
-</p>
-
-<p>
-🔫 마우스 왼쪽 버튼 : 총 발사 (연사)
-</p>
-
-<p>
-👾 적 전투기를 격추하면 점수 증가
-</p>
-
-<p>
-❤️ HP가 0이 되면 게임 종료
-</p>
-
-</div>
