@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="ko">
-
 <head>
 
 <meta charset="UTF-8">
@@ -20,7 +19,8 @@ body{
     left:20px;
     color:white;
     font-size:25px;
-    z-index:5;
+    z-index:10;
+    font-family:Arial;
 }
 
 </style>
@@ -41,7 +41,7 @@ body{
 
 <br>
 
-🔫 연사 : 마우스 클릭 유지
+🔫 마우스 누르기 : 연사
 
 </div>
 
@@ -50,13 +50,12 @@ body{
 <script src="https://cdn.jsdelivr.net/npm/three@0.160/build/three.min.js"></script>
 
 
-
 <script>
 
 
-// =================
+// ======================
 // 기본 설정
-// =================
+// ======================
 
 
 const scene =
@@ -64,14 +63,14 @@ new THREE.Scene();
 
 
 scene.background =
-new THREE.Color(0x3399ff);
+new THREE.Color(0x66ccff);
 
 
 
 const camera =
 new THREE.PerspectiveCamera(
 70,
-innerWidth/innerHeight,
+window.innerWidth/window.innerHeight,
 0.1,
 1000
 );
@@ -83,31 +82,32 @@ new THREE.WebGLRenderer();
 
 
 renderer.setSize(
-innerWidth,
-innerHeight
+window.innerWidth,
+window.innerHeight
 );
 
 
-document.body.appendChild(renderer.domElement);
+document.body.appendChild(
+renderer.domElement
+);
 
 
 
 
+// ======================
+// 빛
+// ======================
 
-// =================
-// 조명
-// =================
 
-
-let light =
+const light =
 new THREE.DirectionalLight(
 0xffffff,
-2
+3
 );
 
 
 light.position.set(
-0,10,5
+0,20,10
 );
 
 
@@ -117,23 +117,21 @@ scene.add(light);
 
 
 
-// =================
+// ======================
 // 바닥
-// =================
+// ======================
 
 
-let ground =
+const ground =
 new THREE.Mesh(
 
 new THREE.PlaneGeometry(
-200,
-200
+300,
+300
 ),
 
 new THREE.MeshPhongMaterial({
-
-color:0x226622
-
+color:0x228833
 })
 
 );
@@ -141,15 +139,17 @@ color:0x226622
 
 ground.rotation.x=-Math.PI/2;
 
+
 scene.add(ground);
 
 
 
 
 
-// =================
+
+// ======================
 // 전투기 생성
-// =================
+// ======================
 
 
 function createPlane(color){
@@ -159,13 +159,14 @@ let plane =
 new THREE.Group();
 
 
+
 // 몸체
 
 let body =
 new THREE.Mesh(
 
 new THREE.ConeGeometry(
-0.6,
+0.7,
 3,
 8
 ),
@@ -184,6 +185,7 @@ plane.add(body);
 
 
 
+
 // 날개
 
 let wing =
@@ -192,7 +194,7 @@ new THREE.Mesh(
 new THREE.BoxGeometry(
 3,
 0.1,
-0.7
+0.8
 ),
 
 new THREE.MeshPhongMaterial({
@@ -206,6 +208,31 @@ plane.add(wing);
 
 
 
+// 꼬리
+
+let tail =
+new THREE.Mesh(
+
+new THREE.BoxGeometry(
+0.3,
+0.8,
+0.5
+),
+
+new THREE.MeshPhongMaterial({
+color:color
+})
+
+);
+
+
+tail.position.z=1;
+
+
+plane.add(tail);
+
+
+
 return plane;
 
 
@@ -214,7 +241,10 @@ return plane;
 
 
 
+
+// ======================
 // 플레이어
+// ======================
 
 
 let player =
@@ -224,79 +254,85 @@ createPlane(0x00ffff);
 scene.add(player);
 
 
+
 player.position.set(
 0,
-2,
+3,
 10
 );
 
 
 
 
-
 camera.position.set(
 0,
-5,
+6,
 15
 );
 
 
-camera.lookAt(player.position);
+camera.lookAt(
+player.position
+);
 
 
 
 
 
 
-// =================
+
+// ======================
 // 적
-// =================
+// ======================
 
 
 let enemies=[];
 
 
-function makeEnemy(){
+
+function createEnemy(){
 
 
-let e =
-createPlane(0xff0000);
+let enemy =
+createPlane(0xff2222);
 
 
-e.position.set(
 
-(Math.random()-0.5)*20,
+enemy.position.set(
 
-3,
+(Math.random()-0.5)*40,
+
+Math.random()*5+2,
 
 -50
 
 );
 
 
-scene.add(e);
+
+scene.add(enemy);
 
 
-enemies.push(e);
+enemies.push(enemy);
 
 
 }
 
 
 
-// 적 수 줄임
+// 최대 7대
 
 setInterval(()=>{
 
 
-if(enemies.length<3){
+if(enemies.length < 7){
 
-makeEnemy();
+createEnemy();
 
 }
 
 
-},3000);
+},2000);
 
 
 
@@ -304,22 +340,24 @@ makeEnemy();
 
 
 
-// =================
+
+// ======================
 // 총알
-// =================
+// ======================
 
 
 let bullets=[];
 
 
-let firing=false;
+let shooting=false;
+
 
 
 document.addEventListener(
 "mousedown",
 ()=>{
 
-firing=true;
+shooting=true;
 
 });
 
@@ -328,9 +366,11 @@ document.addEventListener(
 "mouseup",
 ()=>{
 
-firing=false;
+shooting=false;
 
 });
+
+
 
 
 
@@ -345,7 +385,7 @@ new THREE.SphereGeometry(
 ),
 
 new THREE.MeshBasicMaterial({
-color:"yellow"
+color:0xffff00
 })
 
 );
@@ -357,13 +397,7 @@ player.position
 );
 
 
-
-bullet.velocity =
-new THREE.Vector3(
-0,
-0,
--1
-);
+bullet.position.z-=2;
 
 
 
@@ -379,12 +413,13 @@ bullets.push(bullet);
 
 
 
-// 연사
+// 연사 속도
+
 
 setInterval(()=>{
 
 
-if(firing){
+if(shooting){
 
 shoot();
 
@@ -399,26 +434,32 @@ shoot();
 
 
 
-// =================
+// ======================
 // 이동
-// =================
+// ======================
 
 
 let keys={};
 
 
-onkeydown=e=>{
+document.addEventListener(
+"keydown",
+e=>{
 
 keys[e.key]=true;
 
-};
+});
 
 
-onkeyup=e=>{
+document.addEventListener(
+"keyup",
+e=>{
 
 keys[e.key]=false;
 
-};
+});
+
+
 
 
 
@@ -430,42 +471,43 @@ let hp=100;
 
 
 
-// =================
-// 게임 반복
-// =================
-
-
-function animate(){
-
-
-requestAnimationFrame(
-animate
-);
 
 
 
-
-// 이동
-
-
-if(keys.ArrowLeft)
-
-player.position.x-=0.2;
+// ======================
+// 게임
+// ======================
 
 
-if(keys.ArrowRight)
-
-player.position.x+=0.2;
+function update(){
 
 
-if(keys.ArrowUp)
 
-player.position.y+=0.2;
+// 플레이어 이동
 
 
-if(keys.ArrowDown)
+if(keys["ArrowLeft"])
 
-player.position.y-=0.2;
+player.position.x-=0.3;
+
+
+
+if(keys["ArrowRight"])
+
+player.position.x+=0.3;
+
+
+
+if(keys["ArrowUp"])
+
+player.position.y+=0.3;
+
+
+
+if(keys["ArrowDown"])
+
+player.position.y-=0.3;
+
 
 
 
@@ -484,6 +526,8 @@ b.position.z-=1;
 if(b.position.z<-100){
 
 scene.remove(b);
+
+bullets.splice(i,1);
 
 }
 
@@ -505,6 +549,9 @@ scene.remove(b);
 enemies.splice(j,1);
 
 
+bullets.splice(i,1);
+
+
 score++;
 
 
@@ -515,11 +562,13 @@ document.getElementById("score")
 }
 
 
-
 });
 
 
 });
+
+
+
 
 
 
@@ -530,12 +579,11 @@ document.getElementById("score")
 enemies.forEach(e=>{
 
 
-e.position.z+=0.1;
+e.position.z+=0.15;
 
 
 
 // 충돌
-
 
 if(
 e.position.distanceTo(player.position)<2
@@ -549,14 +597,47 @@ document.getElementById("hp")
 .innerHTML=Math.floor(hp);
 
 
-}
 
+}
 
 
 });
 
 
 
+
+
+
+if(hp<=0){
+
+alert(
+"게임 오버\n점수 : "+score
+);
+
+
+location.reload();
+
+}
+
+
+
+}
+
+
+
+
+
+
+
+function animate(){
+
+
+requestAnimationFrame(
+animate
+);
+
+
+update();
 
 
 renderer.render(
@@ -566,6 +647,7 @@ camera
 
 
 }
+
 
 
 animate();
