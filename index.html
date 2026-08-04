@@ -1,71 +1,86 @@
-<!DOCTYPE html>
+  <!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>부산 여행</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>나의 홈페이지</title>
 
 <style>
-    body{
+    body {
+        margin: 0;
         font-family: Arial, sans-serif;
-        background-color: #e8f7ff;
-        margin:0;
+        background: #f4f4f4;
     }
 
-    header{
-        background-color: #0099cc;
-        color:white;
-        text-align:center;
-        padding:20px;
+    header {
+        background: #4CAF50;
+        color: white;
+        text-align: center;
+        padding: 20px;
     }
 
-    section{
-        background:white;
-        width:80%;
-        margin:20px auto;
-        padding:20px;
-        border-radius:10px;
+    nav {
+        background: #333;
+        text-align: center;
+        padding: 10px;
     }
 
-    h2{
-        color:#0099cc;
+    nav a {
+        color: white;
+        text-decoration: none;
+        margin: 15px;
     }
 
-    footer{
-        background:#333;
-        color:white;
-        text-align:center;
-        padding:10px;
+    .main {
+        text-align: center;
+        padding: 60px 20px;
+    }
+
+    .main h2 {
+        color: #333;
+    }
+
+    .button {
+        display: inline-block;
+        margin-top: 20px;
+        padding: 12px 25px;
+        background: #4CAF50;
+        color: white;
+        text-decoration: none;
+        border-radius: 5px;
+    }
+
+    footer {
+        background: #333;
+        color: white;
+        text-align: center;
+        padding: 15px;
+        margin-top: 40px;
     }
 </style>
 </head>
-
 <body>
 
 <header>
-    <h1>부산 여행 안내</h1>
+    <h1>🌟 나의 홈페이지 🌟</h1>
 </header>
 
-<section>
-    <h2>추천 장소</h2>
-    <ul>
-        <li>해운대 해수욕장</li>
-        <li>광안리 해수욕장</li>
-        <li>감천문화마을</li>
-    </ul>
+<nav>
+    <a href="#">홈</a>
+    <a href="#">소개</a>
+    <a href="#">사진</a>
+    <a href="#">연락처</a>
+</nav>
 
-    <h2>추천 음식</h2>
-    <ul>
-        <li>돼지국밥</li>
-        <li>밀면</li>
-        <li>회</li>
-    </ul>
+<div class="main">
+    <h2>환영합니다!</h2>
+    <p>이곳은 HTML로 만든 간단한 홈페이지 대문 화면입니다.</p>
 
-    <h2>여행 한마디</h2>
-    <p>부산은 아름다운 바다와 맛있는 음식이 많은 여행지입니다.</p>
-</section>
+    <a href="#" class="button">더 알아보기</a>
+</div>
 
 <footer>
-    즐거운 부산 여행!
+    © 2026 나의 홈페이지
 </footer>
 
 </body>
