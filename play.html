@@ -2,70 +2,92 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>Tactical FPS</title>
+<title>Tactical Hero FPS</title>
 
 <style>
 
 body{
-    margin:0;
-    overflow:hidden;
-    background:black;
-    font-family:Arial;
+margin:0;
+overflow:hidden;
+background:black;
+font-family:Arial;
+}
+
+#hud{
+position:absolute;
+top:20px;
+left:20px;
+color:white;
+font-size:22px;
+z-index:5;
 }
 
 
-#hud{
-    position:absolute;
-    top:20px;
-    left:20px;
-    color:white;
-    font-size:22px;
-    z-index:10;
+#enemyBar{
+position:absolute;
+top:30px;
+left:50%;
+transform:translateX(-50%);
+width:200px;
+height:20px;
+background:#333;
+z-index:5;
 }
 
 
 #enemyHP{
-    position:absolute;
-    top:50px;
-    left:50%;
-    transform:translateX(-50%);
-    width:200px;
-    height:20px;
-    background:red;
-    z-index:10;
+height:100%;
+width:100%;
+background:red;
 }
 
 
-#crosshair{
-
+#cross{
 position:absolute;
 top:50%;
 left:50%;
 transform:translate(-50%,-50%);
 color:white;
 font-size:35px;
-z-index:10;
+z-index:5;
+}
 
+
+#skill{
+position:absolute;
+bottom:20px;
+left:50%;
+transform:translateX(-50%);
+color:white;
+font-size:20px;
 }
 
 </style>
 
 </head>
 
-
 <body>
 
 
 <div id="hud">
 ❤️ HP : <span id="hp">100</span>
+<br>
+⚡ 스킬 : <span id="skillText">사용 가능</span>
 </div>
 
 
+<div id="enemyBar">
 <div id="enemyHP"></div>
+</div>
 
 
-<div id="crosshair">
+<div id="cross">
 +
+</div>
+
+
+<div id="skill">
+Q : 특수능력 | E : 돌진 | Shift : 달리기
 </div>
 
 
@@ -76,54 +98,39 @@ z-index:10;
 <script>
 
 
-// =================
-// 기본 설정
-// =================
+const scene=new THREE.Scene();
 
-
-const scene =
-new THREE.Scene();
-
-
-scene.background =
+scene.background=
 new THREE.Color(0x87ceeb);
 
 
 
-const camera =
+const camera=
 new THREE.PerspectiveCamera(
 75,
-window.innerWidth/window.innerHeight,
+innerWidth/innerHeight,
 0.1,
 1000
 );
 
 
 
-const renderer =
+const renderer=
 new THREE.WebGLRenderer();
 
-
 renderer.setSize(
-window.innerWidth,
-window.innerHeight
+innerWidth,
+innerHeight
 );
 
-
-document.body.appendChild(
-renderer.domElement
-);
+document.body.appendChild(renderer.domElement);
 
 
 
 
-// =================
-// 맵
-// =================
+// 바닥
 
-
-const ground =
-new THREE.Mesh(
+let floor=new THREE.Mesh(
 
 new THREE.PlaneGeometry(100,100),
 
@@ -133,61 +140,41 @@ color:0x555555
 
 );
 
+floor.rotation.x=-Math.PI/2;
 
-ground.rotation.x=-Math.PI/2;
-
-
-scene.add(ground);
+scene.add(floor);
 
 
 
 
-// =================
 // 사람 생성
-// =================
+
+function makePerson(color){
 
 
-function createCharacter(color){
-
-
-let group =
-new THREE.Group();
+let p=new THREE.Group();
 
 
 
-// 몸
+let body=new THREE.Mesh(
 
-let body =
-new THREE.Mesh(
-
-new THREE.BoxGeometry(
-1,
-1.5,
-0.5
-),
+new THREE.BoxGeometry(1,1.5,0.5),
 
 new THREE.MeshBasicMaterial({
-color:color
+color
 })
 
 );
 
-
 body.position.y=1.5;
 
-group.add(body);
+p.add(body);
 
 
 
+let head=new THREE.Mesh(
 
-// 머리
-
-let head =
-new THREE.Mesh(
-
-new THREE.SphereGeometry(
-0.35
-),
+new THREE.SphereGeometry(.35),
 
 new THREE.MeshBasicMaterial({
 color:0xffcc99
@@ -195,156 +182,74 @@ color:0xffcc99
 
 );
 
-
 head.position.y=2.6;
 
-
-group.add(head);
-
+p.add(head);
 
 
 
-// 다리
-
-let leg1 =
-new THREE.Mesh(
-
-new THREE.BoxGeometry(
-0.25,
-1,
-0.25
-),
-
-new THREE.MeshBasicMaterial({
-color:"black"
-})
-
-);
-
-
-leg1.position.set(
--0.25,
-0.5,
-0
-);
-
-
-group.add(leg1);
-
-
-
-let leg2=leg1.clone();
-
-leg2.position.x=0.25;
-
-group.add(leg2);
-
-
-
-return group;
+return p;
 
 }
 
 
 
-// =================
 // 플레이어
-// =================
 
-
-const player =
-createCharacter("blue");
-
+let player=makePerson("blue");
 
 scene.add(player);
 
 
 
 camera.position.set(
-0,
-2,
-5
+0,2,5
 );
-
 
 player.add(camera);
 
 
 
 
-// =================
 // 적
-// =================
 
+let enemy=makePerson("red");
 
-const enemy =
-createCharacter("red");
-
-
-enemy.position.set(
-0,
-0,
--20
-);
-
+enemy.position.z=-20;
 
 scene.add(enemy);
 
 
 
-let enemyHP=100;
+let enemyHealth=100;
 
-let playerHP=100;
-
-
-
-let enemySpeed=0.04;
-
-let enemyDamage=5;
-
-let attackCool=0;
+let playerHealth=100;
 
 
 
 
 
-// =================
 // 이동
-// =================
-
 
 let keys={};
 
 
+onkeydown=e=>keys[e.key.toLowerCase()]=true;
 
-document.addEventListener(
-"keydown",
-e=>{
-keys[e.key]=true;
-});
-
-
-document.addEventListener(
-"keyup",
-e=>{
-keys[e.key]=false;
-});
+onkeyup=e=>keys[e.key.toLowerCase()]=false;
 
 
 
 
-// =================
-// 마우스 시점
-// =================
 
+// 마우스 조준
 
 let yaw=0;
-
 let pitch=0;
 
 
 
-document.body.onclick=()=>{
+onclick=()=>{
 
 document.body.requestPointerLock();
 
@@ -352,18 +257,14 @@ document.body.requestPointerLock();
 
 
 
-document.addEventListener(
-"mousemove",
-e=>{
-
+onmousemove=e=>{
 
 if(document.pointerLockElement){
 
 
-yaw-=e.movementX*0.002;
+yaw-=e.movementX*.002;
 
-
-pitch-=e.movementY*0.002;
+pitch-=e.movementY*.002;
 
 
 pitch=Math.max(
@@ -372,9 +273,7 @@ Math.min(1.5,pitch)
 );
 
 
-
 camera.rotation.order="YXZ";
-
 
 camera.rotation.y=yaw;
 
@@ -383,32 +282,22 @@ camera.rotation.x=pitch;
 
 }
 
-});
+};
 
 
 
 
-
-// =================
-// 총알
-// =================
-
+// 총
 
 let bullets=[];
 
 
-
-document.addEventListener(
-"mousedown",
-()=>{
+onmousedown=()=>{
 
 
-let bullet =
-new THREE.Mesh(
+let b=new THREE.Mesh(
 
-new THREE.SphereGeometry(
-0.07
-),
+new THREE.SphereGeometry(.06),
 
 new THREE.MeshBasicMaterial({
 color:"yellow"
@@ -417,109 +306,93 @@ color:"yellow"
 );
 
 
-
-bullet.position.copy(
+b.position.copy(
 camera.getWorldPosition(
 new THREE.Vector3()
 )
 );
 
 
-
-let dir =
-new THREE.Vector3(
-0,
-0,
--1
-);
+b.dir=new THREE.Vector3(0,0,-1)
+.applyQuaternion(camera.quaternion);
 
 
 
-dir.applyQuaternion(
-camera.quaternion
-);
+scene.add(b);
+
+bullets.push(b);
 
 
-
-bullet.dir=dir;
-
-
-scene.add(bullet);
-
-
-bullets.push(bullet);
-
-
-
-});
+};
 
 
 
 
 
-// =================
-// 적 공격
-// =================
+// 스킬
 
-
-function enemyAttack(){
-
-
-let distance =
-enemy.position.distanceTo(
-player.position
-);
+let skillReady=true;
 
 
 
-if(distance < 2){
+onkeydown=e=>{
 
 
-attackCool++;
+if(e.key=="e"){
 
+// 돌진
 
-if(attackCool>60){
-
-
-playerHP-=enemyDamage;
-
-
-document.getElementById("hp").innerHTML=
-Math.floor(playerHP);
-
-
-attackCool=0;
-
+player.translateZ(-3);
 
 }
 
 
 
-}
+if(e.key=="q" && skillReady){
+
+
+skillReady=false;
+
+
+enemyHealth-=40;
+
+
+document.getElementById("skillText").innerHTML=
+"재사용 대기중";
+
+
+setTimeout(()=>{
+
+skillReady=true;
+
+document.getElementById("skillText").innerHTML=
+"사용 가능";
+
+
+},5000);
 
 
 
 }
 
-
-
-// =================
-// 게임
-// =================
-
-
-function animate(){
-
-
-requestAnimationFrame(
-animate
-);
+};
 
 
 
-// 이동
+
+
+function update(){
+
+
+// 이동 속도
 
 let speed=0.15;
+
+
+if(keys["shift"])
+
+speed=.3;
+
 
 
 if(keys["w"])
@@ -540,50 +413,50 @@ player.translateX(speed);
 
 
 
-// 적 추격
+// 적 추적
 
-
-let dir =
-new THREE.Vector3();
-
-
-dir.subVectors(
+let d=
+new THREE.Vector3()
+.subVectors(
 player.position,
 enemy.position
 );
 
 
-dir.normalize();
+d.normalize();
 
 
 enemy.position.add(
-dir.multiplyScalar(enemySpeed)
+d.multiplyScalar(.03)
 );
 
 
-
-enemy.lookAt(
-player.position
-);
+enemy.lookAt(player.position);
 
 
 
 // 적 공격
 
-enemyAttack();
+if(enemy.position.distanceTo(player.position)<2){
+
+playerHealth-=0.1;
+
+
+document.getElementById("hp").innerHTML=
+Math.floor(playerHealth);
+
+}
 
 
 
 
-// 총알
+// 총알 충돌
 
-bullets.forEach(
-(b,index)=>{
+bullets.forEach((b,i)=>{
 
 
 b.position.add(
-b.dir.clone()
-.multiplyScalar(0.7)
+b.dir.clone().multiplyScalar(.8)
 );
 
 
@@ -593,42 +466,36 @@ b.position.distanceTo(enemy.position)<1
 ){
 
 
-enemyHP-=10;
+enemyHealth-=10;
 
 
-
-document.getElementById("enemyHP")
-.style.width=
-(enemyHP*2)+"px";
-
+document.getElementById("enemyHP").style.width=
+enemyHealth+"%";
 
 
 scene.remove(b);
 
 
 
-if(enemyHP<=0){
+if(enemyHealth<=0){
 
 scene.remove(enemy);
 
-alert("🎯 적 처치!");
+alert("적 처치!");
 
 }
 
 
 }
-
 
 
 });
 
 
 
+if(playerHealth<=0){
 
-
-if(playerHP<=0){
-
-alert("💀 패배");
+alert("패배");
 
 location.reload();
 
@@ -636,19 +503,25 @@ location.reload();
 
 
 
+}
+
+
+
+function loop(){
+
+requestAnimationFrame(loop);
+
+update();
 
 renderer.render(
 scene,
 camera
 );
 
-
-
 }
 
 
-animate();
-
+loop();
 
 
 </script>
