@@ -2,82 +2,55 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>FPS 플레이</title>
+<title>지진 FPS 플레이</title>
 
 <style>
 body{
     margin:0;
-    background:#222;
+    background:black;
     color:white;
     text-align:center;
     font-family:Arial;
 }
 
-#game{
-    width:800px;
-    height:500px;
-    margin:auto;
-    background:#555;
-    position:relative;
-    overflow:hidden;
+canvas{
+    background:#333;
+    border:3px solid white;
 }
-
-
-.player{
-    width:50px;
-    height:50px;
-    background:blue;
-    position:absolute;
-    bottom:20px;
-    left:375px;
-}
-
-
-.enemy{
-    width:50px;
-    height:50px;
-    background:red;
-    position:absolute;
-    top:50px;
-}
-
 
 button{
-    padding:15px;
+    padding:12px 25px;
     margin:10px;
+    font-size:18px;
+    cursor:pointer;
 }
+
+#hp{
+    color:red;
+    font-size:25px;
+}
+
 </style>
 
 </head>
-
 
 <body>
 
 
 <h1>🔫 지진 FPS</h1>
 
-<p>
-이동: ← → 키 / 공격: 클릭
-</p>
-
-
-<div id="game">
-
-<div class="player" id="player"></div>
-
-<div class="enemy" id="enemy" style="left:200px;">
-🏹
-</div>
-
-<div class="enemy" style="left:600px;">
-⚔
+<div>
+HP :
+<span id="hp">100</span>
 </div>
 
 
-</div>
+<canvas id="game" width="900" height="500"></canvas>
 
 
-<button onclick="attack()">
+<br>
+
+<button onclick="shoot()">
 🔫 총쏘기
 </button>
 
@@ -87,44 +60,251 @@ button{
 </button>
 
 
-<h2 id="score">
-처치 수: 0
-</h2>
-
-
 <script>
 
-let player=document.getElementById("player");
 
-let score=0;
-
-
-document.addEventListener("keydown",function(e){
-
-let x=player.offsetLeft;
+const canvas=document.getElementById("game");
+const ctx=canvas.getContext("2d");
 
 
-if(e.key=="ArrowLeft"){
-player.style.left=x-20+"px";
+// 플레이어
+
+let player={
+
+x:450,
+y:250,
+hp:100
+
+};
+
+
+
+// 적
+
+let enemies=[
+
+{
+x:150,
+y:200,
+type:"🏹",
+hp:50
+},
+
+{
+x:700,
+y:300,
+type:"⚔",
+hp:50
 }
 
+];
 
-if(e.key=="ArrowRight"){
-player.style.left=x+20+"px";
-}
+
+
+// 총알
+
+let bullets=[];
+
+
+
+// 적 공격 시간
+
+let enemyAttack=0;
+
+
+
+
+function draw(){
+
+
+ctx.clearRect(0,0,900,500);
+
+
+// 화면(1인칭 느낌)
+
+ctx.fillStyle="#444";
+ctx.fillRect(0,0,900,500);
+
+
+// 적 표시
+
+enemies.forEach(e=>{
+
+ctx.font="50px Arial";
+
+ctx.fillText(
+e.type,
+e.x,
+e.y
+);
+
 
 });
 
 
 
-function attack(){
+// 총알
 
-score++;
+bullets.forEach(b=>{
 
-document.getElementById("score").innerHTML=
-"처치 수: "+score;
+ctx.fillStyle="yellow";
 
-alert("🔫 적을 공격했습니다!");
+ctx.beginPath();
+
+ctx.arc(
+b.x,
+b.y,
+8,
+0,
+Math.PI*2
+);
+
+ctx.fill();
+
+
+});
+
+
+
+// 무기
+
+ctx.fillStyle="black";
+
+ctx.fillRect(
+400,
+420,
+100,
+80
+);
+
+
+ctx.fillStyle="gray";
+
+ctx.fillRect(
+440,
+350,
+20,
+80
+);
+
+
+requestAnimationFrame(draw);
+
+
+}
+
+
+
+function shoot(){
+
+
+bullets.push({
+
+x:450,
+y:350,
+speed:10
+
+});
+
+
+}
+
+
+
+// 총알 이동
+
+function update(){
+
+
+
+bullets.forEach((b,index)=>{
+
+
+b.y-=b.speed;
+
+
+
+enemies.forEach((e,ei)=>{
+
+
+let distance=
+Math.abs(b.x-e.x)+Math.abs(b.y-e.y);
+
+
+
+if(distance<50){
+
+e.hp-=25;
+
+bullets.splice(index,1);
+
+
+if(e.hp<=0){
+
+enemies.splice(ei,1);
+
+}
+
+
+}
+
+});
+
+
+});
+
+
+
+// 적 이동
+
+enemies.forEach(e=>{
+
+
+if(e.x<450)
+
+e.x+=0.5;
+
+else
+
+e.x-=0.5;
+
+
+
+});
+
+
+
+// 적 공격
+
+enemyAttack++;
+
+
+if(enemyAttack>100){
+
+
+player.hp-=5;
+
+
+document.getElementById("hp").innerHTML=
+player.hp;
+
+
+enemyAttack=0;
+
+
+}
+
+
+
+
+if(player.hp<=0){
+
+alert("💀 게임 오버");
+
+location.reload();
+
+}
+
 
 }
 
@@ -132,13 +312,23 @@ alert("🔫 적을 공격했습니다!");
 
 function dash(){
 
-let x=player.offsetLeft;
+player.x+=100;
 
-player.style.left=x+100+"px";
+if(player.x>850)
+
+player.x=850;
+
 
 alert("💨 돌진!");
 
 }
+
+
+
+setInterval(update,20);
+
+
+draw();
 
 
 </script>
