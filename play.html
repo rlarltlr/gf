@@ -2,32 +2,30 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>3D FPS Game</title>
+<title>3D FPS Shooter</title>
 
 <style>
 body{
     margin:0;
     overflow:hidden;
-    background:black;
 }
 
-#info{
+#hp{
     position:absolute;
-    top:10px;
-    left:10px;
     color:white;
-    font-size:20px;
+    font-size:25px;
+    top:20px;
+    left:20px;
     z-index:2;
 }
-
 </style>
 
 </head>
 
 <body>
 
-<div id="info">
-WASD 이동 | 마우스 시점 | 클릭 공격
+<div id="hp">
+❤️ HP : 100
 </div>
 
 
@@ -37,26 +35,22 @@ WASD 이동 | 마우스 시점 | 클릭 공격
 <script>
 
 
-// 장면 생성
-const scene = new THREE.Scene();
+const scene=new THREE.Scene();
 
-scene.background = new THREE.Color(0x87ceeb);
+scene.background=new THREE.Color(0x87ceeb);
 
 
-// 카메라 (1인칭)
-const camera =
-new THREE.PerspectiveCamera(
-75,
+
+const camera=new THREE.PerspectiveCamera(
+70,
 window.innerWidth/window.innerHeight,
 0.1,
 1000
 );
 
 
-// 렌더러
 
-const renderer =
-new THREE.WebGLRenderer();
+const renderer=new THREE.WebGLRenderer();
 
 renderer.setSize(
 window.innerWidth,
@@ -69,8 +63,7 @@ document.body.appendChild(renderer.domElement);
 
 // 바닥
 
-const floor =
-new THREE.Mesh(
+const ground=new THREE.Mesh(
 
 new THREE.PlaneGeometry(100,100),
 
@@ -80,73 +73,242 @@ color:0x555555
 
 );
 
-floor.rotation.x=-Math.PI/2;
+ground.rotation.x=-Math.PI/2;
 
-scene.add(floor);
+scene.add(ground);
 
 
 
-// 플레이어 캐릭터
 
-const player =
-new THREE.Mesh(
+// 사람 캐릭터 만들기
+
+function createCharacter(color){
+
+
+let body=new THREE.Group();
+
+
+// 몸
+
+let torso=new THREE.Mesh(
 
 new THREE.BoxGeometry(
 1,
-2,
-1
+1.5,
+0.5
 ),
 
 new THREE.MeshBasicMaterial({
-color:"blue"
+color:color
 })
 
 );
 
+torso.position.y=1.5;
 
-player.position.y=1;
+body.add(torso);
+
+
+
+// 머리
+
+let head=new THREE.Mesh(
+
+new THREE.SphereGeometry(
+0.35
+),
+
+new THREE.MeshBasicMaterial({
+color:0xffcc99
+})
+
+);
+
+head.position.y=2.6;
+
+body.add(head);
+
+
+
+// 팔
+
+let arm1=new THREE.Mesh(
+
+new THREE.BoxGeometry(
+0.2,
+1,
+0.2
+),
+
+new THREE.MeshBasicMaterial({
+color:color
+})
+
+);
+
+arm1.position.set(
+-0.7,
+1.5,
+0
+);
+
+body.add(arm1);
+
+
+
+let arm2=arm1.clone();
+
+arm2.position.x=0.7;
+
+body.add(arm2);
+
+
+
+// 다리
+
+let leg1=new THREE.Mesh(
+
+new THREE.BoxGeometry(
+0.25,
+1,
+0.25
+),
+
+new THREE.MeshBasicMaterial({
+color:"black"
+})
+
+);
+
+leg1.position.set(
+-0.25,
+0.5,
+0
+);
+
+body.add(leg1);
+
+
+let leg2=leg1.clone();
+
+leg2.position.x=0.25;
+
+body.add(leg2);
+
+
+return body;
+
+}
+
+
+
+// 플레이어
+
+const player=createCharacter("blue");
 
 scene.add(player);
 
 
 
+// 적
+
+const enemy=createCharacter("red");
+
+enemy.position.z=-15;
+
+scene.add(enemy);
+
+
+
+
+
 camera.position.set(
 0,
-1.7,
-0
+5,
+8
 );
 
 
-player.add(camera);
+
+
+// 마우스 조준
+
+let mouse=new THREE.Vector2();
+
+
+window.addEventListener(
+"mousemove",
+e=>{
+
+
+mouse.x=
+(e.clientX/window.innerWidth)*2-1;
+
+
+mouse.y=
+-(e.clientY/window.innerHeight)*2+1;
+
+
+});
 
 
 
-// 적 캐릭터
 
-const enemy =
-new THREE.Mesh(
+// 총알
 
-new THREE.BoxGeometry(
-1,
-2,
-1
+let bullets=[];
+
+
+window.addEventListener(
+"click",
+()=>{
+
+
+let raycaster=
+new THREE.Raycaster();
+
+
+raycaster.setFromCamera(
+mouse,
+camera
+);
+
+
+let direction=
+raycaster.ray.direction.clone();
+
+
+
+let bullet=new THREE.Mesh(
+
+new THREE.SphereGeometry(
+0.08
 ),
 
 new THREE.MeshBasicMaterial({
-color:"red"
+color:"yellow"
 })
 
 );
 
 
-enemy.position.set(
-0,
-1,
--10
+
+bullet.position.copy(
+camera.position
 );
 
 
-scene.add(enemy);
+bullet.direction=direction;
+
+
+scene.add(bullet);
+
+
+bullets.push(bullet);
+
+
+});
+
 
 
 
@@ -157,142 +319,63 @@ let keys={};
 
 document.addEventListener(
 "keydown",
-e=>{
-keys[e.key]=true;
-});
+e=>keys[e.key]=true
+);
 
 
 document.addEventListener(
 "keyup",
-e=>{
-keys[e.key]=false;
-});
-
-
-
-// 마우스 시점
-
-document.body.onclick=()=>{
-
-document.body.requestPointerLock();
-
-};
-
-
-let xRotation=0;
-let yRotation=0;
-
-
-document.addEventListener(
-"mousemove",
-e=>{
-
-if(document.pointerLockElement){
-
-yRotation-=e.movementX*0.002;
-
-xRotation-=e.movementY*0.002;
-
-
-xRotation=Math.max(
--1.5,
-Math.min(1.5,xRotation)
+e=>keys[e.key]=false
 );
 
 
-camera.rotation.x=xRotation;
-
-player.rotation.y=yRotation;
 
 
-}
-
-});
-
-
-
-// 총알
-
-let bullets=[];
-
-
-document.addEventListener(
-"mousedown",
-()=>{
-
-
-let bullet=
-new THREE.Mesh(
-
-new THREE.SphereGeometry(
-0.05
-),
-
-new THREE.MeshBasicMaterial({
-color:"yellow"
-})
-
-);
-
-
-bullet.position.copy(
-camera.getWorldPosition(
-new THREE.Vector3()
-)
-);
-
-
-bullet.direction=
-new THREE.Vector3(0,0,-1)
-.applyQuaternion(
-camera.quaternion
-);
-
-
-scene.add(bullet);
-
-bullets.push(bullet);
-
-
-});
-
-
-
-
-// 게임 반복
+// 게임
 
 function animate(){
 
 
-requestAnimationFrame(
-animate
-);
+requestAnimationFrame(animate);
+
 
 
 // 이동
 
-let speed=0.1;
-
-
 if(keys["w"])
-player.translateZ(-speed);
+player.position.z-=0.1;
 
 
 if(keys["s"])
-player.translateZ(speed);
+player.position.z+=0.1;
 
 
 if(keys["a"])
-player.translateX(-speed);
+player.position.x-=0.1;
 
 
 if(keys["d"])
-player.translateX(speed);
+player.position.x+=0.1;
 
 
 
+// 카메라 따라가기
 
-// 적 접근
+camera.position.x=
+player.position.x;
+
+
+camera.position.z=
+player.position.z+8;
+
+
+camera.lookAt(
+player.position
+);
+
+
+
+// 적 이동
 
 enemy.lookAt(player.position);
 
@@ -309,7 +392,7 @@ bullets.forEach(
 b=>{
 
 b.position.add(
-b.direction.multiplyScalar(0.5)
+b.direction.clone().multiplyScalar(0.5)
 );
 
 
@@ -328,6 +411,7 @@ camera
 
 
 animate();
+
 
 
 </script>
