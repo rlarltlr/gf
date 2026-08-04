@@ -1,50 +1,43 @@
-const scene=
-new THREE.Scene();
+const scene = new THREE.Scene();
 
-
-scene.background=
-new THREE.Color("skyblue");
+scene.background =
+new THREE.Color(0x87ceeb);
 
 
 
-const camera=
+const camera =
 new THREE.PerspectiveCamera(
 75,
-innerWidth/innerHeight,
+window.innerWidth/window.innerHeight,
 0.1,
 1000
 );
 
 
 
-const renderer=
+const renderer =
 new THREE.WebGLRenderer();
 
 
 renderer.setSize(
-innerWidth,
-innerHeight
+window.innerWidth,
+window.innerHeight
 );
 
 
-document.body.appendChild(
-renderer.domElement
-);
+document.body.appendChild(renderer.domElement);
 
 
 
 // 바닥
 
-let floor=
+const floor =
 new THREE.Mesh(
 
-new THREE.PlaneGeometry(
-100,
-100
-),
+new THREE.PlaneGeometry(100,100),
 
 new THREE.MeshBasicMaterial({
-color:"gray"
+color:0x555555
 })
 
 );
@@ -56,121 +49,223 @@ scene.add(floor);
 
 
 
+// 플레이어
 
-// 생성
+const player =
+new THREE.Mesh(
 
-let player=
-new Player(
-scene,
-camera
+new THREE.BoxGeometry(
+1,
+2,
+1
+),
+
+new THREE.MeshBasicMaterial({
+color:"blue"
+})
+
 );
 
 
-let weapon=
-new Weapon(
-scene,
-camera
-);
+player.position.y=1;
+
+scene.add(player);
 
 
-let enemy=
-new Enemy(
-scene
-);
 
-
-let skill=
-new Skill(
-player
+camera.position.set(
+0,
+2,
+5
 );
 
 
 
+camera.lookAt(player.position);
 
+
+
+// 적
+
+const enemy =
+new THREE.Mesh(
+
+new THREE.BoxGeometry(
+1,
+2,
+1
+),
+
+new THREE.MeshBasicMaterial({
+color:"red"
+})
+
+);
+
+
+enemy.position.set(
+0,
+1,
+-10
+);
+
+
+scene.add(enemy);
+
+
+
+let enemyHP=100;
+
+
+
+// 이동
 
 let keys={};
 
 
-onkeydown=e=>{
-
+document.addEventListener(
+"keydown",
+e=>{
 keys[e.key.toLowerCase()]=true;
+});
 
 
-if(e.key=="e")
-skill.dash();
-
-
-};
-
-
-
-onkeyup=e=>{
-
+document.addEventListener(
+"keyup",
+e=>{
 keys[e.key.toLowerCase()]=false;
-
-};
-
-
-
-
-// 총
-
-onclick=()=>{
-
-weapon.shoot();
-
-};
+});
 
 
 
 
-// 마우스
+// 총알
 
-document.body.onclick=()=>{
-
-document.body.requestPointerLock();
-
-};
+let bullets=[];
 
 
-
-document.onmousemove=e=>{
-
-
-if(document.pointerLockElement){
+document.addEventListener(
+"click",
+()=>{
 
 
-camera.rotation.y-=
-e.movementX*.002;
+let bullet =
+new THREE.Mesh(
+
+new THREE.SphereGeometry(
+0.1
+),
+
+new THREE.MeshBasicMaterial({
+color:"yellow"
+})
+
+);
 
 
-camera.rotation.x-=
-e.movementY*.002;
+
+bullet.position.copy(camera.position);
+
+
+
+bullet.direction =
+new THREE.Vector3(0,0,-1)
+.applyQuaternion(camera.quaternion);
+
+
+
+scene.add(bullet);
+
+bullets.push(bullet);
+
+
+});
+
+
+
+
+// 게임
+
+function update(){
+
+
+// 이동
+
+if(keys.w)
+player.position.z-=0.1;
+
+if(keys.s)
+player.position.z+=0.1;
+
+if(keys.a)
+player.position.x-=0.1;
+
+if(keys.d)
+player.position.x+=0.1;
+
+
+
+// 적 이동
+
+enemy.lookAt(player.position);
+
+
+enemy.position.lerp(
+player.position,
+0.001
+);
+
+
+
+
+// 총알
+
+bullets.forEach((b)=>{
+
+
+b.position.add(
+b.direction.clone()
+.multiplyScalar(0.5)
+);
+
+
+
+if(
+b.position.distanceTo(enemy.position)<1
+){
+
+enemyHP-=10;
+
+console.log(
+"적 HP:",
+enemyHP
+);
+
+
+if(enemyHP<=0){
+
+scene.remove(enemy);
+
+alert("적 처치!");
+
+}
 
 
 }
 
-};
+
+});
+
+
+}
 
 
 
+function animate(){
 
+requestAnimationFrame(animate);
 
-function loop(){
-
-
-requestAnimationFrame(loop);
-
-
-
-player.move(keys);
-
-
-enemy.update(player);
-
-
-weapon.update();
-
+update();
 
 
 renderer.render(
@@ -178,10 +273,7 @@ scene,
 camera
 );
 
-
-
 }
 
 
-
-loop();
+animate();
