@@ -1,761 +1,193 @@
 <!DOCTYPE html>
+
 <html lang="ko">
 <head>
-
 <meta charset="UTF-8">
-<title>3D 전투기 슈팅</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>전투기 슈팅 게임</title>
 
 <style>
-
 body{
     margin:0;
     overflow:hidden;
+    background:#87ceeb;
 }
 
-#ui{
+canvas{
+    display:block;
+    background:linear-gradient(#6ec6ff,#b3ecff);
+}
+
+#hud{
     position:absolute;
-    top:20px;
-    left:20px;
+    top:10px;
+    left:10px;
     color:white;
     font-size:24px;
-    z-index:10;
-    font-family:Arial;
+    font-family:Arial,sans-serif;
+    text-shadow:2px 2px 4px rgba(0,0,0,0.5);
 }
-
 </style>
 
 </head>
 
-
 <body>
 
-
-<div id="ui">
-
-❤️ HP : <span id="hp">100</span>
-
-<br>
-
-🏆 점수 : <span id="score">0</span>
-
-<br>
-
-🔫 마우스 : 연사
-
-</div>
-
-
-
-<script src="https://cdn.jsdelivr.net/npm/three@0.160/build/three.min.js"></script>
-
+<div id="hud">점수: 0 | HP: 5</div>
+<canvas id="game"></canvas>
 
 <script>
-
-
-// =====================
-// 기본 설정
-// =====================
-
-const scene = new THREE.Scene();
-
-scene.background =
-new THREE.Color(0x66ccff);
-
-
-
-const camera =
-new THREE.PerspectiveCamera(
-70,
-innerWidth/innerHeight,
-0.1,
-1000
-);
-
-
-
-const renderer =
-new THREE.WebGLRenderer();
-
-
-renderer.setSize(
-innerWidth,
-innerHeight
-);
-
-
-document.body.appendChild(
-renderer.domElement
-);
-
-
-
-
-// 총소리
-
-const shootSound =
-new Audio("sounds/shoot.mp3");
-
-
-shootSound.volume=0.4;
-
-
-
-
-
-// 빛
-
-let light =
-new THREE.DirectionalLight(
-0xffffff,
-3
-);
-
-light.position.set(
-0,20,10
-);
-
-scene.add(light);
-
-
-
-
-
-// 바닥
-
-let ground =
-new THREE.Mesh(
-
-new THREE.PlaneGeometry(
-300,
-300
-),
-
-new THREE.MeshPhongMaterial({
-color:0x228833
-})
-
-);
-
-
-ground.rotation.x=-Math.PI/2;
-
-scene.add(ground);
-
-
-
-
-
-
-
-// =====================
-// 비행기 생성
-// =====================
-
-
-function makePlane(color){
-
-
-let plane =
-new THREE.Group();
-
-
-
-let body =
-new THREE.Mesh(
-
-new THREE.ConeGeometry(
-0.7,
-3,
-8
-),
-
-new THREE.MeshPhongMaterial({
-color:color
-})
-
-);
-
-
-body.rotation.x=Math.PI/2;
-
-plane.add(body);
-
-
-
-
-let wing =
-new THREE.Mesh(
-
-new THREE.BoxGeometry(
-3,
-0.12,
-0.8
-),
-
-new THREE.MeshPhongMaterial({
-color:color
-})
-
-);
-
-
-plane.add(wing);
-
-
-
-return plane;
-
-}
-
-
-
-
-
-
-
-// 플레이어
-
-
-let player =
-makePlane(0x00ffff);
-
-
-scene.add(player);
-
-
-player.position.set(
-0,
-3,
-10
-);
-
-
-
-
-
-
-camera.position.set(
-0,
-8,
-20
-);
-
-
-
-
-
-
-
-// =====================
-// 적
-// =====================
-
-
-let enemies=[];
-
-
-let explosions=[];
-
-
-
-function spawnEnemy(){
-
-
-let enemy =
-makePlane(0xff0000);
-
-
-
-enemy.position.set(
-
-(Math.random()-0.5)*40,
-
-Math.random()*6+2,
-
--60
-
-);
-
-
-
-scene.add(enemy);
-
-
-enemies.push(enemy);
-
-
-}
-
-
-
-
-// 최대 7대
-
-setInterval(()=>{
-
-
-if(enemies.length<7){
-
-spawnEnemy();
-
-}
-
-
-},2000);
-
-
-
-
-
-
-
-
-// =====================
-// 폭발 효과
-// =====================
-
-
-function explode(position){
-
-
-let particles=[];
-
-
-
-for(let i=0;i<15;i++){
-
-
-let p =
-new THREE.Mesh(
-
-new THREE.SphereGeometry(
-0.1
-),
-
-new THREE.MeshBasicMaterial({
-color:0xffaa00
-})
-
-);
-
-
-
-p.position.copy(position);
-
-
-
-p.velocity =
-new THREE.Vector3(
-
-(Math.random()-0.5)*0.3,
-
-(Math.random()-0.5)*0.3,
-
-(Math.random()-0.5)*0.3
-
-);
-
-
-
-scene.add(p);
-
-
-particles.push(p);
-
-
-}
-
-
-
-explosions.push(particles);
-
-
-}
-
-
-
-
-
-
-
-// =====================
-// 총
-// =====================
-
-
-let bullets=[];
-
-
-let shooting=false;
-
-
-
-document.addEventListener(
-"mousedown",
-()=>{
-
-shooting=true;
-
-});
-
-
-
-document.addEventListener(
-"mouseup",
-()=>{
-
-shooting=false;
-
-});
-
-
-
-
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+let score = 0;
+let hp = 5;
+
+const player = {
+    x: canvas.width/2,
+    y: canvas.height-80,
+    w: 40,
+    h: 60,
+    speed: 6
+};
+
+let bullets = [];
+let enemies = [];
+let keys = {};
+let shooting = false;
+
+window.addEventListener("keydown",e=>keys[e.key]=true);
+window.addEventListener("keyup",e=>keys[e.key]=false);
+
+window.addEventListener("mousedown",()=>shooting=true);
+window.addEventListener("mouseup",()=>shooting=false);
 
 function shoot(){
-
-
-shootSound.currentTime=0;
-
-shootSound.play();
-
-
-
-let bullet =
-new THREE.Mesh(
-
-new THREE.SphereGeometry(
-0.08
-),
-
-new THREE.MeshBasicMaterial({
-color:0xffff00
-})
-
-);
-
-
-
-bullet.position.copy(player.position);
-
-
-bullet.position.z-=2;
-
-
-
-scene.add(bullet);
-
-
-bullets.push(bullet);
-
-
+    bullets.push({
+        x: player.x,
+        y: player.y-20,
+        r:4
+    });
 }
-
-
-
-
-// 연사
 
 setInterval(()=>{
-
-
-if(shooting){
-
-shoot();
-
-}
-
-
+    if(shooting) shoot();
 },100);
 
+function spawnEnemy(){
+    enemies.push({
+        x:Math.random()*(canvas.width-40)+20,
+        y:-20,
+        w:35,
+        h:45,
+        speed:2+Math.random()*3
+    });
+}
 
-
-
-
-
-
-// =====================
-// 이동
-// =====================
-
-
-let keys={};
-
-
-
-document.addEventListener(
-"keydown",
-e=>{
-
-keys[e.key]=true;
-
-});
-
-
-document.addEventListener(
-"keyup",
-e=>{
-
-keys[e.key]=false;
-
-});
-
-
-
-
-
-
-
-let hp=100;
-
-let score=0;
-
-
-
-
-
-
-
-// =====================
-// 게임 업데이트
-// =====================
-
+setInterval(()=>{
+    const count = Math.floor(Math.random()*3)+2;
+    for(let i=0;i<count;i++) spawnEnemy();
+},250);
 
 function update(){
 
+    if(keys["ArrowLeft"]) player.x-=player.speed;
+    if(keys["ArrowRight"]) player.x+=player.speed;
+    if(keys["ArrowUp"]) player.y-=player.speed;
+    if(keys["ArrowDown"]) player.y+=player.speed;
 
+    player.x=Math.max(20,Math.min(canvas.width-20,player.x));
+    player.y=Math.max(30,Math.min(canvas.height-30,player.y));
 
-if(keys.ArrowLeft)
+    for(let i=bullets.length-1;i>=0;i--){
+        bullets[i].y-=10;
+        if(bullets[i].y<0) bullets.splice(i,1);
+    }
 
-player.position.x-=0.3;
+    for(let i=enemies.length-1;i>=0;i--){
+        enemies[i].y+=enemies[i].speed;
 
+        if(enemies[i].y>canvas.height+50){
+            enemies.splice(i,1);
+            hp--;
+            continue;
+        }
 
-if(keys.ArrowRight)
+        if(
+            Math.abs(enemies[i].x-player.x)<30 &&
+            Math.abs(enemies[i].y-player.y)<40
+        ){
+            enemies.splice(i,1);
+            hp--;
+            continue;
+        }
 
-player.position.x+=0.3;
+        for(let j=bullets.length-1;j>=0;j--){
+            if(
+                Math.abs(bullets[j].x-enemies[i].x)<20 &&
+                Math.abs(bullets[j].y-enemies[i].y)<25
+            ){
+                bullets.splice(j,1);
+                enemies.splice(i,1);
+                score+=10;
+                break;
+            }
+        }
+    }
 
+    document.getElementById("hud").innerText =
+        `점수: ${score} | HP: ${hp}`;
 
+    if(hp<=0){
+        alert(`게임 오버!\\n최종 점수: ${score}`);
+        location.reload();
+    }
+}
 
-if(keys.ArrowUp)
+function draw(){
 
-player.position.y+=0.3;
+    ctx.clearRect(0,0,canvas.width,canvas.height);
 
+    ctx.fillStyle="blue";
+    ctx.beginPath();
+    ctx.moveTo(player.x,player.y-30);
+    ctx.lineTo(player.x-20,player.y+20);
+    ctx.lineTo(player.x,player.y+10);
+    ctx.lineTo(player.x+20,player.y+20);
+    ctx.closePath();
+    ctx.fill();
 
-if(keys.ArrowDown)
+    ctx.fillStyle="yellow";
+    bullets.forEach(b=>{
+        ctx.beginPath();
+        ctx.arc(b.x,b.y,b.r,0,Math.PI*2);
+        ctx.fill();
+    });
 
-player.position.y-=0.3;
-
-
-
-
-
-
-
-// 총알 이동
-
-
-bullets.forEach((b,i)=>{
-
-
-b.position.z-=1;
-
-
-
-enemies.forEach((e,j)=>{
-
-
-if(
-b.position.distanceTo(e.position)<1.5
-){
-
-
-explode(e.position);
-
-
-scene.remove(e);
-
-scene.remove(b);
-
-
-enemies.splice(j,1);
-
-bullets.splice(i,1);
-
-
-score++;
-
-
-document.getElementById("score")
-.innerHTML=score;
-
+    ctx.fillStyle="red";
+    enemies.forEach(e=>{
+        ctx.beginPath();
+        ctx.moveTo(e.x,e.y+20);
+        ctx.lineTo(e.x-18,e.y-20);
+        ctx.lineTo(e.x,e.y-10);
+        ctx.lineTo(e.x+18,e.y-20);
+        ctx.closePath();
+        ctx.fill();
+    });
 
 }
 
-
-
-});
-
-
-});
-
-
-
-
-
-
-
-// 폭발 움직임
-
-
-explosions.forEach((group,index)=>{
-
-
-group.forEach(p=>{
-
-
-p.position.add(
-p.velocity
-);
-
-
-p.scale.multiplyScalar(
-0.95
-);
-
-
-});
-
-
-});
-
-
-
-
-
-
-
-// 적 이동
-
-
-enemies.forEach(e=>{
-
-
-e.position.z+=0.18;
-
-
-
-if(
-e.position.distanceTo(player.position)<2
-){
-
-
-hp-=0.5;
-
-
-document.getElementById("hp")
-.innerHTML=Math.floor(hp);
-
-
+function gameLoop(){
+    update();
+    draw();
+    requestAnimationFrame(gameLoop);
 }
 
-
-
-});
-
-
-
-
-
-
-
-// 카메라 따라가기
-
-
-let target =
-new THREE.Vector3(
-
-player.position.x,
-
-player.position.y+7,
-
-player.position.z+18
-
-);
-
-
-
-camera.position.lerp(
-target,
-0.08
-);
-
-
-
-camera.lookAt(
-
-player.position.x,
-
-player.position.y,
-
-player.position.z-10
-
-);
-
-
-
-
-
-if(hp<=0){
-
-alert(
-"게임 종료\n점수 : "+score
-);
-
-location.reload();
-
-}
-
-
-
-}
-
-
-
-
-
-
-
-// =====================
-// 실행
-// =====================
-
-
-function animate(){
-
-
-requestAnimationFrame(
-animate
-);
-
-
-update();
-
-
-renderer.render(
-scene,
-camera
-);
-
-
-}
-
-
-animate();
-
-
-
+gameLoop();
 </script>
-
 
 </body>
 </html>
