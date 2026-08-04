@@ -2,58 +2,193 @@
 
 <html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>세계지도 배경</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>최근 24시간 세계 지진</title>
 
-  <style>
-    html, body {
-      margin: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      background: #d9d9d9;
-    }
+<style>
+html, body{
+    margin:0;
+    width:100%;
+    height:100%;
+    overflow:hidden;
+    background:#111;
+    font-family:Arial, sans-serif;
+}
 
-    /* 전체 화면 배경 */
-    body {
-      background-image: url('world-map.png');
-      background-size: cover;
-      background-position: center center;
-      background-repeat: no-repeat;
-      font-family: Arial, sans-serif;
-    }
+#map{
+    position:relative;
+    width:100%;
+    height:100%;
+    background:url('world-map.png') center center / cover no-repeat;
+}
 
-    /* 위에 내용을 올리고 싶을 때 */
-    .overlay {
-      position: absolute;
-      top: 30px;
-      left: 30px;
-      color: white;
-      background: rgba(0,0,0,0.35);
-      padding: 16px 20px;
-      border-radius: 12px;
-      backdrop-filter: blur(4px);
-    }
+#overlay{
+    position:absolute;
+    inset:0;
+}
 
-    h1 {
-      margin: 0 0 8px;
-      font-size: 32px;
-    }
+#title{
+    position:absolute;
+    top:15px;
+    left:15px;
+    color:white;
+    background:rgba(0,0,0,0.5);
+    padding:10px 14px;
+    border-radius:12px;
+    font-size:22px;
+    z-index:10;
+}
 
-    p {
-      margin: 0;
-      font-size: 16px;
+#status{
+    position:absolute;
+    top:70px;
+    left:15px;
+    color:white;
+    background:rgba(0,0,0,0.5);
+    padding:8px 12px;
+    border-radius:10px;
+    font-size:14px;
+    z-index:10;
+}
+
+.quake{
+    position:absolute;
+    border-radius:50%;
+    transform:translate(-50%,-50%);
+    animation:pulse 2s infinite;
+    pointer-events:auto;
+}
+
+@keyframes pulse{
+    0%{
+        transform:translate(-50%,-50%) scale(0.8);
+        opacity:0.9;
     }
-  </style>
+    70%{
+        transform:translate(-50%,-50%) scale(1.4);
+        opacity:0.3;
+    }
+    100%{
+        transform:translate(-50%,-50%) scale(0.8);
+        opacity:0.9;
+    }
+}
+
+#tooltip{
+    position:absolute;
+    display:none;
+    background:rgba(0,0,0,0.8);
+    color:white;
+    padding:8px 10px;
+    border-radius:8px;
+    font-size:13px;
+    pointer-events:none;
+    z-index:20;
+    max-width:260px;
+}
+</style>
 
 </head>
+
 <body>
 
-  <div class="overlay">
-    <h1>세계지도</h1>
-    <p>배경으로 사용할 수 있는 전체 화면 지도</p>
-  </div>
+<div id="map">
+    <div id="title">🌍 최근 24시간 세계 지진 (USGS 실시간)</div>
+    <div id="status">불러오는 중...</div>
+    <div id="overlay"></div>
+    <div id="tooltip"></div>
+</div>
+
+<script>
+const overlay = document.getElementById('overlay');
+const tooltip = document.getElementById('tooltip');
+const statusEl = document.getElementById('status');
+
+async function loadEarthquakes(){
+
+    try{
+
+        const url = 'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson';
+
+        const res = await fetch(url);
+        const data = await res.json();
+
+        overlay.innerHTML = '';
+
+        const w = overlay.clientWidth;
+        const h = overlay.clientHeight;
+
+        data.features.forEach(eq => {
+
+            const mag = eq.properties.mag || 0;
+            const place = eq.properties.place || '위치 정보 없음';
+            const time = new Date(eq.properties.time).toLocaleString('ko-KR');
+
+            const [lon, lat] = eq.geometry.coordinates;
+
+            // 세계지도(Equirectangular) 좌표 변환
+            const x = (lon + 180) / 360 * w;
+            const y = (90 - lat) / 180 * h;
+
+            const size = Math.max(4, mag * 3);
+
+            let color = '#00ff88';
+            if(mag >= 6) color = '#ff0000';
+            else if(mag >= 5) color = '#ff6600';
+            else if(mag >= 4) color = '#ffaa00';
+            else if(mag >= 3) color = '#ffff00';
+
+            const dot = document.createElement('div');
+            dot.className = 'quake';
+            dot.style.left = x + 'px';
+            dot.style.top = y + 'px';
+            dot.style.width = size + 'px';
+            dot.style.height = size + 'px';
+            dot.style.background = color;
+            dot.style.boxShadow = `0 0 ${size*2}px ${color}`;
+
+            dot.addEventListener('mouseenter', e => {
+                tooltip.style.display = 'block';
+                tooltip.innerHTML =
+                    `<strong>M ${mag.toFixed(1)}</strong><br>${place}<br>${time}`;
+            });
+
+            dot.addEventListener('mousemove', e => {
+                tooltip.style.left = (e.pageX + 15) + 'px';
+                tooltip.style.top = (e.pageY + 15) + 'px';
+            });
+
+            dot.addEventListener('mouseleave', () => {
+                tooltip.style.display = 'none';
+            });
+
+            overlay.appendChild(dot);
+
+        });
+
+        statusEl.textContent =
+            `최근 24시간 지진 ${data.features.length}건 · 마지막 갱신: ${new Date().toLocaleTimeString('ko-KR')}`;
+
+    }catch(err){
+
+        console.error(err);
+        statusEl.textContent = '지진 데이터를 불러오지 못했습니다.';
+
+    }
+
+}
+
+// 최초 로드
+loadEarthquakes();
+
+// 60초마다 자동 갱신
+setInterval(loadEarthquakes, 60000);
+
+// 창 크기 변경 시 다시 배치
+window.addEventListener('resize', loadEarthquakes);
+</script>
 
 </body>
 </html>
+
