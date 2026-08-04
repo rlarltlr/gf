@@ -3,7 +3,7 @@
 <head>
 
 <meta charset="UTF-8">
-<title>3D 전투기 슈팅</title>
+<title>3D 전투기 게임</title>
 
 <style>
 
@@ -26,22 +26,15 @@ body{
 
 </head>
 
-
 <body>
 
 
 <div id="ui">
-
 ❤️ HP : <span id="hp">100</span>
-
 <br>
-
 🏆 점수 : <span id="score">0</span>
-
 <br>
-
-🔫 마우스 : 연사
-
+🔫 마우스 누르기 : 연사
 </div>
 
 
@@ -52,17 +45,14 @@ body{
 <script>
 
 
-// =================
-// 기본
-// =================
+// =====================
+// 기본 설정
+// =====================
 
-
-const scene =
-new THREE.Scene();
-
+const scene = new THREE.Scene();
 
 scene.background =
-new THREE.Color(0x55bbff);
+new THREE.Color(0x66ccff);
 
 
 
@@ -86,12 +76,15 @@ innerHeight
 );
 
 
-document.body.appendChild(renderer.domElement);
+document.body.appendChild(
+renderer.domElement
+);
 
 
 
 
-// 조명
+
+// 빛
 
 let light =
 new THREE.DirectionalLight(
@@ -100,10 +93,11 @@ new THREE.DirectionalLight(
 );
 
 light.position.set(
-0,10,10
+0,20,10
 );
 
 scene.add(light);
+
 
 
 
@@ -133,15 +127,16 @@ scene.add(ground);
 
 
 
-// =================
-// 전투기
-// =================
 
+
+// =====================
+// 비행기 만들기
+// =====================
 
 function makePlane(color){
 
 
-let p =
+let plane =
 new THREE.Group();
 
 
@@ -162,9 +157,11 @@ color:color
 );
 
 
+
 body.rotation.x=Math.PI/2;
 
-p.add(body);
+plane.add(body);
+
 
 
 
@@ -173,7 +170,7 @@ new THREE.Mesh(
 
 new THREE.BoxGeometry(
 3,
-0.1,
+0.12,
 0.8
 ),
 
@@ -184,12 +181,11 @@ color:color
 );
 
 
-p.add(wing);
+plane.add(wing);
 
 
 
-return p;
-
+return plane;
 
 }
 
@@ -197,7 +193,9 @@ return p;
 
 
 
+// =====================
 // 플레이어
+// =====================
 
 
 let player =
@@ -215,14 +213,12 @@ player.position.set(
 
 
 
+
+
 camera.position.set(
 0,
-6,
-15
-);
-
-camera.lookAt(
-player.position
+8,
+20
 );
 
 
@@ -230,9 +226,12 @@ player.position
 
 
 
-// =================
+
+
+
+// =====================
 // 적
-// =================
+// =====================
 
 
 let enemies=[];
@@ -242,26 +241,27 @@ let enemies=[];
 function spawnEnemy(){
 
 
-let e =
+let enemy =
 makePlane(0xff0000);
 
 
 
-e.position.set(
+enemy.position.set(
 
 (Math.random()-0.5)*40,
 
-Math.random()*5+2,
+Math.random()*6+2,
 
--50
+-60
 
 );
 
 
 
-scene.add(e);
+scene.add(enemy);
 
-enemies.push(e);
+
+enemies.push(enemy);
 
 
 }
@@ -289,9 +289,9 @@ spawnEnemy();
 
 
 
-// =================
-// 총
-// =================
+// =====================
+// 총알
+// =====================
 
 
 let bullets=[];
@@ -321,6 +321,7 @@ shooting=false;
 
 
 
+
 function shoot(){
 
 
@@ -345,6 +346,7 @@ player.position
 
 
 bullet.position.z-=2;
+
 
 
 scene.add(bullet);
@@ -377,12 +379,14 @@ shoot();
 
 
 
-// =================
+
+// =====================
 // 이동
-// =================
+// =====================
 
 
 let keys={};
+
 
 
 document.addEventListener(
@@ -406,7 +410,6 @@ keys[e.key]=false;
 
 
 
-
 let hp=100;
 
 let score=0;
@@ -416,9 +419,10 @@ let score=0;
 
 
 
-// =================
-// 게임 업데이트
-// =================
+
+// =====================
+// 업데이트
+// =====================
 
 
 function update(){
@@ -456,9 +460,7 @@ b.position.z-=1;
 
 
 
-// 화면 밖 제거
-
-if(b.position.z<-100){
+if(b.position.z<-120){
 
 scene.remove(b);
 
@@ -468,7 +470,6 @@ bullets.splice(i,1);
 
 
 
-// 적 충돌
 
 
 enemies.forEach((e,j)=>{
@@ -480,12 +481,7 @@ b.position.distanceTo(e.position)<1.5
 
 
 
-// 적 삭제
-
 scene.remove(e);
-
-
-// 총알 삭제
 
 scene.remove(b);
 
@@ -497,8 +493,6 @@ bullets.splice(i,1);
 
 
 
-// 점수
-
 score++;
 
 
@@ -507,6 +501,7 @@ document.getElementById("score")
 
 
 }
+
 
 
 });
@@ -523,14 +518,11 @@ document.getElementById("score")
 // 적 이동
 
 
-enemies.forEach((e)=>{
+enemies.forEach(e=>{
 
 
-e.position.z+=0.15;
+e.position.z+=0.18;
 
-
-
-// 충돌하면 HP 감소
 
 
 if(
@@ -542,14 +534,53 @@ hp-=0.5;
 
 
 document.getElementById("hp")
-.innerHTML=
-Math.floor(hp);
+.innerHTML=Math.floor(hp);
 
 
 }
 
 
+
 });
+
+
+
+
+
+// =====================
+// 카메라 추적
+// =====================
+
+
+let targetCamera =
+new THREE.Vector3(
+
+player.position.x,
+
+player.position.y+7,
+
+player.position.z+18
+
+);
+
+
+
+camera.position.lerp(
+targetCamera,
+0.08
+);
+
+
+
+camera.lookAt(
+
+player.position.x,
+
+player.position.y,
+
+player.position.z-10
+
+);
 
 
 
@@ -575,10 +606,9 @@ location.reload();
 
 
 
-
-// =================
+// =====================
 // 실행
-// =================
+// =====================
 
 
 function animate(){
@@ -608,5 +638,4 @@ animate();
 </script>
 
 </body>
-
 </html>
