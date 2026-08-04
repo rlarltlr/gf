@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>3D 전투기 슈팅</title>
+<title>3D 전투기 슈팅 - Chase Camera</title>
 <style>
 body{
     margin:0;
@@ -37,29 +37,33 @@ const camera = new THREE.PerspectiveCamera(
     75,
     window.innerWidth/window.innerHeight,
     0.1,
-    1000
+    2000
 );
+
 camera.position.set(0,2,10);
-camera.lookAt(0,0,-10);
 
 const renderer = new THREE.WebGLRenderer({antialias:true});
 renderer.setSize(window.innerWidth,window.innerHeight);
+renderer.shadowMap.enabled = true;
 document.body.appendChild(renderer.domElement);
 
 // 조명
 const light = new THREE.DirectionalLight(0xffffff,1.2);
-light.position.set(5,10,5);
+light.position.set(10,20,10);
+light.castShadow = true;
 scene.add(light);
+
 scene.add(new THREE.AmbientLight(0xffffff,0.6));
 
 // 바닥
 const floor = new THREE.Mesh(
-    new THREE.PlaneGeometry(80,200),
+    new THREE.PlaneGeometry(200,4000),
     new THREE.MeshPhongMaterial({color:0x2e7d32})
 );
 floor.rotation.x = -Math.PI/2;
 floor.position.y = -1.5;
-floor.position.z = -40;
+floor.position.z = -1800;
+floor.receiveShadow = true;
 scene.add(floor);
 
 // 플레이어
@@ -70,17 +74,19 @@ const body = new THREE.Mesh(
     new THREE.MeshPhongMaterial({color:0x1565c0})
 );
 body.rotation.x = Math.PI/2;
+body.castShadow = true;
 
 const wing = new THREE.Mesh(
     new THREE.BoxGeometry(2.2,0.08,0.5),
     new THREE.MeshPhongMaterial({color:0x90caf9})
 );
+wing.castShadow = true;
 
 player.add(body);
 player.add(wing);
 
-// 플레이어는 카메라 앞
 player.position.set(0,0,6);
+
 scene.add(player);
 
 // 총알
@@ -94,6 +100,7 @@ let hp = 5;
 
 const hud = document.getElementById('hud');
 
+// 입력
 const keys = {};
 window.addEventListener('keydown',e=>keys[e.key.toLowerCase()]=true);
 window.addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
@@ -102,6 +109,7 @@ let shooting=false;
 window.addEventListener('mousedown',()=>shooting=true);
 window.addEventListener('mouseup',()=>shooting=false);
 
+// 총알 생성
 function createBullet(){
 
     const b = new THREE.Mesh(
@@ -111,6 +119,7 @@ function createBullet(){
 
     b.position.copy(player.position);
     b.position.y += 0.2;
+    b.position.z -= 1;
 
     scene.add(b);
     bullets.push(b);
@@ -131,20 +140,22 @@ function createEnemy(){
         new THREE.MeshPhongMaterial({color:0xd32f2f})
     );
     body.rotation.x = -Math.PI/2;
+    body.castShadow = true;
 
     const wing = new THREE.Mesh(
         new THREE.BoxGeometry(1.8,0.06,0.4),
         new THREE.MeshPhongMaterial({color:0xef9a9a})
     );
+    wing.castShadow = true;
 
     e.add(body);
     e.add(wing);
 
-    // 화면 정면 먼 거리
+    // 플레이어 앞쪽 먼 거리에서 등장
     e.position.set(
-        (Math.random()-0.5)*8,
-        (Math.random()-0.5)*2,
-        -40
+        player.position.x + (Math.random()-0.5)*10,
+        player.position.y + (Math.random()-0.5)*4,
+        player.position.z - 80
     );
 
     scene.add(e);
@@ -152,12 +163,16 @@ function createEnemy(){
 
 }
 
-// 적 수를 줄임
+// 적 수를 적당히 유지
 setInterval(createEnemy,900);
 
+// 업데이트
 function update(){
 
     const speed = 0.22;
+
+    // 앞으로 계속 비행
+    player.position.z -= 0.18;
 
     if(keys['arrowleft'] || keys['a']) player.position.x -= speed;
     if(keys['arrowright'] || keys['d']) player.position.x += speed;
@@ -172,7 +187,7 @@ function update(){
 
         bullets[i].position.z -= 1.2;
 
-        if(bullets[i].position.z < -60){
+        if(bullets[i].position.z < player.position.z - 120){
             scene.remove(bullets[i]);
             bullets.splice(i,1);
         }
@@ -182,11 +197,11 @@ function update(){
     // 적
     for(let i=enemies.length-1;i>=0;i--){
 
-        // 정면에서 플레이어 쪽으로 돌진
-        enemies[i].position.z += 0.28;
+        // 플레이어를 향해 돌진
+        enemies[i].position.z += 0.45;
 
         // 플레이어를 지나가면 HP 감소
-        if(enemies[i].position.z > 8){
+        if(enemies[i].position.z > player.position.z + 6){
             scene.remove(enemies[i]);
             enemies.splice(i,1);
             hp--;
@@ -194,7 +209,7 @@ function update(){
         }
 
         // 플레이어 충돌
-        if(enemies[i].position.distanceTo(player.position) < 0.9){
+        if(enemies[i].position.distanceTo(player.position) < 1.0){
             scene.remove(enemies[i]);
             enemies.splice(i,1);
             hp--;
@@ -230,11 +245,34 @@ function update(){
 
 }
 
+// 카메라 추적
+function updateCamera(){
+
+    const target = new THREE.Vector3(
+        player.position.x,
+        player.position.y + 2,
+        player.position.z + 8
+    );
+
+    // 부드럽게 따라가기
+    camera.position.lerp(target,0.08);
+
+    // 플레이어 앞을 바라보기
+    camera.lookAt(
+        player.position.x,
+        player.position.y,
+        player.position.z - 20
+    );
+
+}
+
+// 렌더 루프
 function animate(){
 
     requestAnimationFrame(animate);
 
     update();
+    updateCamera();
 
     renderer.render(scene,camera);
 
@@ -242,6 +280,7 @@ function animate(){
 
 animate();
 
+// 리사이즈
 window.addEventListener('resize',()=>{
 
     camera.aspect = window.innerWidth/window.innerHeight;
