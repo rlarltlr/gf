@@ -2,158 +2,70 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>운동 시작</title>
+<title>FPS 메인</title>
 
 <style>
 
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-}
-
 body{
-    font-family:"Arial", sans-serif;
-    background:linear-gradient(#e0f7ff,#ffffff);
+    margin:0;
+    background:#111;
+    color:white;
+    font-family:Arial;
 }
 
 
-/* 상단 */
 header{
-    background:linear-gradient(135deg,#0077ff,#00d4ff);
-    color:white;
+    background:linear-gradient(90deg,#ff0000,#ff9900);
     text-align:center;
-    padding:45px;
-}
-
-header h1{
-    font-size:45px;
-}
-
-header p{
-    margin-top:15px;
-    font-size:20px;
+    padding:30px;
 }
 
 
-/* 메뉴 */
-nav{
-    background:#222;
-    padding:15px;
-    text-align:center;
-}
-
-nav a{
-    color:white;
-    text-decoration:none;
-    margin:20px;
-    font-size:18px;
-}
-
-nav a:hover{
-    color:#00d4ff;
-}
-
-
-/* 메인 */
 .container{
     width:85%;
     margin:40px auto;
-    background:white;
+    background:#222;
     padding:40px;
-    border-radius:25px;
-    box-shadow:0 10px 25px rgba(0,0,0,0.15);
+    border-radius:20px;
     text-align:center;
 }
 
 
-.container h2{
-    color:#0077ff;
-    font-size:35px;
-    margin-bottom:30px;
+h2{
+    color:#ff9900;
 }
 
 
-/* 운동 카드 */
-.exercise{
-    display:flex;
-    justify-content:center;
-    gap:25px;
-    flex-wrap:wrap;
-}
-
-
-.box{
-    width:260px;
-    background:#f5fbff;
-    padding:25px;
-    border-radius:20px;
-    box-shadow:0 5px 15px rgba(0,0,0,0.1);
-    transition:0.3s;
-}
-
-
-.box:hover{
-    transform:translateY(-10px);
-    background:#e6f7ff;
-}
-
-
-.box h3{
-    color:#0077ff;
-    font-size:23px;
-    margin-bottom:15px;
-}
-
-
-.box p{
-    line-height:1.8;
-}
-
-
-.box b{
-    color:#ff6600;
-    font-size:18px;
-}
-
-
-hr{
-    border:0;
-    height:2px;
-    background:#ddd;
-    margin:15px 0;
-}
-
-
-/* 시작 버튼 */
 button{
-    margin-top:40px;
-    padding:15px 40px;
+    padding:15px 30px;
+    background:#ff3300;
+    color:white;
     border:none;
-    border-radius:30px;
-    background:#0077ff;
-    color:white;
-    font-size:20px;
-    font-weight:bold;
+    border-radius:20px;
+    font-size:18px;
     cursor:pointer;
-    transition:0.3s;
 }
 
 
-button:hover{
-    background:#0055bb;
-    transform:scale(1.1);
+.card{
+    display:inline-block;
+    width:250px;
+    margin:15px;
+    padding:20px;
+    background:#333;
+    border-radius:15px;
 }
 
 
-/* 아래 */
+.card h3{
+    color:#00ccff;
+}
+
+
 footer{
-    background:#222;
-    color:white;
+    background:#000;
     text-align:center;
     padding:20px;
-    margin-top:50px;
 }
 
 </style>
@@ -165,92 +77,84 @@ footer{
 
 
 <header>
-    <h1>🔥 오늘의 운동 🔥</h1>
-    <p>건강한 몸을 위한 하루 30분 운동</p>
+
+<h1>🔥 지진 FPS 전투</h1>
+
+<p>최후까지 살아남아라!</p>
+
 </header>
-
-
-<nav>
-    <a href="#">🏠 홈</a>
-    <a href="#">💪 운동</a>
-    <a href="#">📅 계획</a>
-    <a href="#">⭐ 목표</a>
-</nav>
 
 
 
 <div class="container">
 
-<h2>🏋️ 오늘의 운동 계획</h2>
+
+<h2>🌋 게임 기능</h2>
 
 
-<div class="exercise">
-
-
-<div class="box">
-<h3>🏃 유산소 운동</h3>
-
-<p>
-달리기<br>
-걷기<br>
-줄넘기
-</p>
-
-<hr>
-
-<b>운동량</b><br>
-달리기 20분<br>
-걷기 20분<br>
-줄넘기 100회
-
-</div>
-
-
-
-<div class="box">
-<h3>💪 근력 운동</h3>
-
-<p>
-팔굽혀펴기<br>
-스쿼트<br>
-윗몸일으키기
-</p>
-
-<hr>
-
-<b>운동량</b><br>
-팔굽혀펴기 15회 × 3세트<br>
-스쿼트 20회 × 3세트<br>
-윗몸일으키기 20회 × 3세트
-
-</div>
-
-
-
-<div class="box">
-<h3>🧘 스트레칭</h3>
-
-<p>
-목 스트레칭<br>
-다리 스트레칭<br>
-전신 스트레칭
-</p>
-
-<hr>
-
-<b>운동량</b><br>
-각 동작 30초 유지<br>
-총 10분 진행
-
-</div>
-
-
-</div>
-
-
-<button onclick="alert('운동 시작! 오늘도 화이팅 💪')">
-운동 시작하기
+<button onclick="earthquake()">
+🌋 지진 모델링
 </button>
+
+
+
+<h2>🧑 캐릭터 기술</h2>
+
+
+<div class="card">
+
+<h3>🔫 총쏘기</h3>
+
+<p>
+원거리 공격<br>
+적에게 피해를 줌<br>
+탄약 관리 필요
+</p>
+
+</div>
+
+
+
+<div class="card">
+
+<h3>💨 돌진</h3>
+
+<p>
+빠른 이동<br>
+적에게 접근<br>
+공격 회피 가능
+</p>
+
+</div>
+
+
+
+<h2>👾 적 종류</h2>
+
+
+<div class="card">
+
+<h3>🏹 활 적</h3>
+
+<p>
+멀리서 공격<br>
+빠른 이동
+</p>
+
+</div>
+
+
+
+<div class="card">
+
+<h3>⚔ 칼 적</h3>
+
+<p>
+근접 공격<br>
+강한 데미지
+</p>
+
+</div>
 
 
 </div>
@@ -258,8 +162,22 @@ footer{
 
 
 <footer>
-© 2026 운동 홈페이지 | 건강한 습관 만들기
+
+© 2026 지진 FPS GAME
+
 </footer>
+
+
+
+<script>
+
+function earthquake(){
+
+alert("🌋 지진 발생! 맵이 흔들립니다!");
+
+}
+
+</script>
 
 
 </body>
