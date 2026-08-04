@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>최근 24시간 세계 지진</title>
+<title>실시간 세계 지진 모니터</title>
 
 <style>
 html, body{
@@ -33,8 +33,8 @@ html, body{
     top:15px;
     left:15px;
     color:white;
-    background:rgba(0,0,0,0.5);
-    padding:10px 14px;
+    background:rgba(0,0,0,0.6);
+    padding:12px 16px;
     border-radius:12px;
     font-size:22px;
     z-index:10;
@@ -42,10 +42,10 @@ html, body{
 
 #status{
     position:absolute;
-    top:70px;
+    top:75px;
     left:15px;
     color:white;
-    background:rgba(0,0,0,0.5);
+    background:rgba(0,0,0,0.6);
     padding:8px 12px;
     border-radius:10px;
     font-size:14px;
@@ -61,24 +61,15 @@ html, body{
 }
 
 @keyframes pulse{
-    0%{
-        transform:translate(-50%,-50%) scale(0.8);
-        opacity:0.9;
-    }
-    70%{
-        transform:translate(-50%,-50%) scale(1.4);
-        opacity:0.3;
-    }
-    100%{
-        transform:translate(-50%,-50%) scale(0.8);
-        opacity:0.9;
-    }
+    0%{ transform:translate(-50%,-50%) scale(0.8); opacity:0.9; }
+    70%{ transform:translate(-50%,-50%) scale(1.6); opacity:0.25; }
+    100%{ transform:translate(-50%,-50%) scale(0.8); opacity:0.9; }
 }
 
 #tooltip{
     position:absolute;
     display:none;
-    background:rgba(0,0,0,0.8);
+    background:rgba(0,0,0,0.85);
     color:white;
     padding:8px 10px;
     border-radius:8px;
@@ -94,8 +85,8 @@ html, body{
 <body>
 
 <div id="map">
-    <div id="title">🌍 최근 24시간 세계 지진 (USGS 실시간)</div>
-    <div id="status">불러오는 중...</div>
+    <div id="title">🌍 실시간 세계 지진 (최근 24시간)</div>
+    <div id="status">연결 중...</div>
     <div id="overlay"></div>
     <div id="tooltip"></div>
 </div>
@@ -109,9 +100,12 @@ async function loadEarthquakes(){
 
     try{
 
-        const url = 'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson';
+        // 캐시 방지용 타임스탬프
+        const url =
+          'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson?t='
+          + Date.now();
 
-        const res = await fetch(url);
+        const res = await fetch(url, { cache: 'no-store' });
         const data = await res.json();
 
         overlay.innerHTML = '';
@@ -127,7 +121,7 @@ async function loadEarthquakes(){
 
             const [lon, lat] = eq.geometry.coordinates;
 
-            // 세계지도(Equirectangular) 좌표 변환
+            // 위도/경도 → 세계지도 좌표
             const x = (lon + 180) / 360 * w;
             const y = (90 - lat) / 180 * h;
 
@@ -151,7 +145,7 @@ async function loadEarthquakes(){
             dot.addEventListener('mouseenter', e => {
                 tooltip.style.display = 'block';
                 tooltip.innerHTML =
-                    `<strong>M ${mag.toFixed(1)}</strong><br>${place}<br>${time}`;
+                  `<strong>M ${mag.toFixed(1)}</strong><br>${place}<br>${time}`;
             });
 
             dot.addEventListener('mousemove', e => {
@@ -168,12 +162,13 @@ async function loadEarthquakes(){
         });
 
         statusEl.textContent =
-            `최근 24시간 지진 ${data.features.length}건 · 마지막 갱신: ${new Date().toLocaleTimeString('ko-KR')}`;
+          `최근 24시간 지진 ${data.features.length}건 · 실시간 갱신: `
+          + new Date().toLocaleTimeString('ko-KR');
 
     }catch(err){
 
         console.error(err);
-        statusEl.textContent = '지진 데이터를 불러오지 못했습니다.';
+        statusEl.textContent = 'USGS 실시간 데이터 연결 실패';
 
     }
 
@@ -182,8 +177,8 @@ async function loadEarthquakes(){
 // 최초 로드
 loadEarthquakes();
 
-// 60초마다 자동 갱신
-setInterval(loadEarthquakes, 60000);
+// 10초마다 실시간 갱신
+setInterval(loadEarthquakes, 10000);
 
 // 창 크기 변경 시 다시 배치
 window.addEventListener('resize', loadEarthquakes);
@@ -191,4 +186,3 @@ window.addEventListener('resize', loadEarthquakes);
 
 </body>
 </html>
-
