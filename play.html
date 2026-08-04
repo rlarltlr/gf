@@ -2,66 +2,49 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>지진 FPS 플레이</title>
+<title>FPS Game</title>
 
 <style>
 body{
     margin:0;
-    background:black;
+    background:#111;
     color:white;
     text-align:center;
     font-family:Arial;
 }
 
 canvas{
-    background:#333;
-    border:3px solid white;
+    background:#555;
+    display:block;
+    margin:auto;
 }
 
 button{
     padding:12px 25px;
     margin:10px;
     font-size:18px;
-    cursor:pointer;
 }
-
-#hp{
-    color:red;
-    font-size:25px;
-}
-
 </style>
 
 </head>
 
 <body>
 
-
 <h1>🔫 지진 FPS</h1>
 
-<div>
-HP :
-<span id="hp">100</span>
-</div>
+<h2>
+HP : <span id="hp">100</span>
+</h2>
 
 
-<canvas id="game" width="900" height="500"></canvas>
+<canvas id="game" width="800" height="500"></canvas>
 
 
-<br>
-
-<button onclick="shoot()">
-🔫 총쏘기
-</button>
-
-
-<button onclick="dash()">
-💨 돌진
-</button>
+<button onclick="shoot()">🔫 총쏘기</button>
+<button onclick="dash()">💨 돌진</button>
 
 
 <script>
-
 
 const canvas=document.getElementById("game");
 const ctx=canvas.getContext("2d");
@@ -70,35 +53,19 @@ const ctx=canvas.getContext("2d");
 // 플레이어
 
 let player={
-
-x:450,
-y:250,
+x:400,
+y:400,
 hp:100
-
 };
-
 
 
 // 적
 
-let enemies=[
-
-{
-x:150,
-y:200,
-type:"🏹",
-hp:50
-},
-
-{
-x:700,
-y:300,
-type:"⚔",
-hp:50
-}
-
-];
-
+let enemy={
+x:400,
+y:100,
+hp:100
+};
 
 
 // 총알
@@ -106,150 +73,95 @@ hp:50
 let bullets=[];
 
 
+// 키 입력
 
-// 적 공격 시간
-
-let enemyAttack=0;
-
+let keys={};
 
 
-
-function draw(){
-
-
-ctx.clearRect(0,0,900,500);
+document.addEventListener("keydown",e=>{
+keys[e.key]=true;
+});
 
 
-// 화면(1인칭 느낌)
-
-ctx.fillStyle="#444";
-ctx.fillRect(0,0,900,500);
-
-
-// 적 표시
-
-enemies.forEach(e=>{
-
-ctx.font="50px Arial";
-
-ctx.fillText(
-e.type,
-e.x,
-e.y
-);
-
-
+document.addEventListener("keyup",e=>{
+keys[e.key]=false;
 });
 
 
 
-// 총알
+// 이동
 
-bullets.forEach(b=>{
+function move(){
 
-ctx.fillStyle="yellow";
+if(keys["a"])
+player.x-=5;
 
-ctx.beginPath();
-
-ctx.arc(
-b.x,
-b.y,
-8,
-0,
-Math.PI*2
-);
-
-ctx.fill();
+if(keys["d"])
+player.x+=5;
 
 
-});
+if(keys["w"])
+player.y-=5;
 
-
-
-// 무기
-
-ctx.fillStyle="black";
-
-ctx.fillRect(
-400,
-420,
-100,
-80
-);
-
-
-ctx.fillStyle="gray";
-
-ctx.fillRect(
-440,
-350,
-20,
-80
-);
-
-
-requestAnimationFrame(draw);
-
+if(keys["s"])
+player.y+=5;
 
 }
 
 
+
+// 총 발사
 
 function shoot(){
 
-
 bullets.push({
 
-x:450,
-y:350,
-speed:10
+x:player.x,
+y:player.y,
+speed:8
 
 });
 
+}
+
+
+// 돌진
+
+function dash(){
+
+player.x+=80;
 
 }
 
 
 
-// 총알 이동
+// 게임 업데이트
 
 function update(){
 
 
+move();
+
+
+// 총알 이동
 
 bullets.forEach((b,index)=>{
-
 
 b.y-=b.speed;
 
 
+// 적 맞음
 
-enemies.forEach((e,ei)=>{
+if(
+Math.abs(b.x-enemy.x)<30 &&
+Math.abs(b.y-enemy.y)<30
+){
 
-
-let distance=
-Math.abs(b.x-e.x)+Math.abs(b.y-e.y);
-
-
-
-if(distance<50){
-
-e.hp-=25;
+enemy.hp-=20;
 
 bullets.splice(index,1);
 
-
-if(e.hp<=0){
-
-enemies.splice(ei,1);
-
 }
-
-
-}
-
-});
-
 
 });
 
@@ -257,49 +169,33 @@ enemies.splice(ei,1);
 
 // 적 이동
 
-enemies.forEach(e=>{
-
-
-if(e.x<450)
-
-e.x+=0.5;
+if(enemy.x<player.x)
+enemy.x+=1;
 
 else
-
-e.x-=0.5;
-
-
-
-});
+enemy.x-=1;
 
 
 
 // 적 공격
 
-enemyAttack++;
+if(
+Math.abs(enemy.x-player.x)<50
+){
 
-
-if(enemyAttack>100){
-
-
-player.hp-=5;
-
+player.hp-=0.2;
 
 document.getElementById("hp").innerHTML=
-player.hp;
-
-
-enemyAttack=0;
+Math.floor(player.hp);
 
 
 }
 
 
 
-
 if(player.hp<=0){
 
-alert("💀 게임 오버");
+alert("게임 오버");
 
 location.reload();
 
@@ -310,29 +206,80 @@ location.reload();
 
 
 
-function dash(){
+// 그리기
 
-player.x+=100;
+function draw(){
 
-if(player.x>850)
+ctx.clearRect(
+0,
+0,
+800,
+500
+);
 
-player.x=850;
+
+// 적
+
+ctx.font="50px Arial";
+
+ctx.fillText(
+"👹",
+enemy.x,
+enemy.y
+);
 
 
-alert("💨 돌진!");
+// 플레이어
+
+ctx.fillText(
+"🔫",
+player.x,
+player.y
+);
+
+
+// 총알
+
+ctx.fillStyle="yellow";
+
+bullets.forEach(b=>{
+
+ctx.beginPath();
+
+ctx.arc(
+b.x,
+b.y,
+5,
+0,
+Math.PI*2
+);
+
+ctx.fill();
+
+});
+
 
 }
 
 
 
-setInterval(update,20);
+// 반복
 
+function game(){
+
+update();
 
 draw();
 
+requestAnimationFrame(game);
+
+}
+
+
+game();
+
 
 </script>
-
 
 </body>
 </html>
