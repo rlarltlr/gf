@@ -2,134 +2,79 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>운동 홈페이지</title>
+<title>FPS 게임 시작</title>
 
 <style>
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-}
-
 body{
-    font-family:Arial, sans-serif;
-    background:linear-gradient(to bottom,#dff6ff,#ffffff);
-}
-
-header{
-    background:linear-gradient(90deg,#0077ff,#00c6ff);
+    margin:0;
+    height:100vh;
+    background:linear-gradient(#000,#444);
     color:white;
+    font-family:Arial;
+    display:flex;
+    justify-content:center;
+    align-items:center;
     text-align:center;
-    padding:40px;
 }
 
-header h1{
-    font-size:45px;
-}
-
-header p{
-    font-size:20px;
-    margin-top:10px;
-}
-
-nav{
+.box{
     background:#222;
-    padding:15px;
-    text-align:center;
+    padding:50px;
+    border-radius:20px;
+    box-shadow:0 0 30px black;
 }
 
-nav a{
-    color:white;
-    text-decoration:none;
-    margin:20px;
-    font-size:18px;
-    font-weight:bold;
+h1{
+    font-size:50px;
+    color:#ff3300;
 }
 
-nav a:hover{
-    color:#00c6ff;
-}
-
-.main{
-    width:80%;
-    max-width:800px;
-    margin:40px auto;
-    background:white;
-    padding:40px;
-    border-radius:15px;
-    box-shadow:0 0 15px rgba(0,0,0,0.2);
-    text-align:center;
-}
-
-.main h2{
-    color:#0077ff;
-    font-size:35px;
-    margin-bottom:20px;
-}
-
-.main p{
+p{
     font-size:20px;
-    line-height:1.8;
 }
 
-.button{
-    display:inline-block;
-    margin-top:30px;
-    padding:15px 35px;
-    background:#0077ff;
-    color:white;
-    text-decoration:none;
+button{
+    padding:15px 40px;
+    margin:15px;
+    border:none;
     border-radius:30px;
     font-size:20px;
     font-weight:bold;
-    transition:0.3s;
+    cursor:pointer;
+    background:#ff3300;
+    color:white;
 }
 
-.button:hover{
-    background:#0056cc;
+button:hover{
+    background:#ff9900;
     transform:scale(1.1);
 }
 
-footer{
-    background:#222;
-    color:white;
-    text-align:center;
-    padding:20px;
-    margin-top:50px;
-}
 </style>
 
 </head>
+
 <body>
 
-<header>
-    <h1>💪 운동의 즐거움 💪</h1>
-    <p>오늘의 운동이 내일의 건강을 만듭니다.</p>
-</header>
 
-<nav>
-    <a href="#">🏠 홈</a>
-    <a href="#">🏃 운동 종류</a>
-    <a href="#">❤️ 운동 효과</a>
-    <a href="#">📞 문의</a>
-</nav>
+<div class="box">
 
-<div class="main">
-    <h2>매일 30분 운동하기</h2>
+<h1>🎮 지진 FPS</h1>
 
-    <p>
-        운동은 체력을 키우고 스트레스를 줄이며<br>
-        건강한 생활을 만드는 가장 좋은 습관입니다.<br><br>
-        지금 바로 건강한 하루를 시작해 보세요!
-    </p>
+<p>
+생존을 위한 전투가 시작된다!
+</p>
 
-    <a href="main.html" class="button">🏋️ 운동 시작하기</a>
+
+<a href="main.html">
+<button>
+게임 시작하기
+</button>
+</a>
+
+
 </div>
 
-<footer>
-    © 2026 운동 홈페이지 | 건강한 하루를 응원합니다.
-</footer>
 
 </body>
 </html>
