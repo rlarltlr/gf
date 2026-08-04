@@ -2,54 +2,33 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Tactical FPS</title>
+<title>FPS GAME</title>
 
 <style>
 body{
-margin:0;
-overflow:hidden;
+    margin:0;
+    overflow:hidden;
 }
 
-#hud{
-position:absolute;
-top:20px;
-left:20px;
-color:white;
-font-size:22px;
-}
-
-#cross{
-position:absolute;
-top:50%;
-left:50%;
-color:white;
-font-size:35px;
+#hp{
+    position:absolute;
+    color:white;
+    top:20px;
+    left:20px;
+    font-size:25px;
 }
 </style>
 
 </head>
 
-
 <body>
 
-
-<div id="hud">
-HP : <span id="hp">100</span>
+<div id="hp">
+HP : 100
 </div>
-
-<div id="cross">
-+
-</div>
-
 
 <script src="https://cdn.jsdelivr.net/npm/three@0.160/build/three.min.js"></script>
-
-<script src="js/player.js"></script>
-<script src="js/weapon.js"></script>
-<script src="js/enemy.js"></script>
-<script src="js/skill.js"></script>
 <script src="js/game.js"></script>
-
 
 </body>
 </html>
